@@ -1,20 +1,19 @@
 .side-navigation {
-  width: 250px; /* Adjust width as needed */
-  background-color: #f8f8f8; /* Light background */
+  width: 250px;
+  background-color: #f8f8f8;
   padding: 40px 0;
-  box-shadow: 2px 0 5px rgba(0,0,0,0.1); /* Subtle shadow */
-   /* Full viewport height */
-   /* Keep it fixed on scroll */
-  top: 50;
+  box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+  top: 0;
   left: 0;
-  overflow-y: auto; /* Enable scrolling if content overflows */
+  overflow-y: auto;
+
 }
 
 .navigation-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0 20px 20px; /* Padding for header */
+  padding: 0 20px 20px;
   border-bottom: 1px solid #eee;
   margin-bottom: 10px;
 }
@@ -39,6 +38,7 @@
 }
 
 .nav-item {
+  position: relative;
   margin-bottom: 5px;
 }
 
@@ -50,7 +50,7 @@
   text-decoration: none;
   font-size: 1em;
   transition: background-color 0.2s ease, color 0.2s ease;
-  cursor: pointer; /* For dropdowns */
+  cursor: pointer;
 }
 
 .nav-item .nav-link:hover {
@@ -58,28 +58,24 @@
   color: #333;
 }
 
-/* Style for active link (if you implement active link highlighting) */
-.nav-item .nav-link.active {
-  background-color: #d0d0d0; /* Example active color */
-  color: #007bff; /* Example active text color */
-}
-
-.nav-item .nav-link span {
-  margin-left: 10px; /* Space between icon and text */
-}
-
-/* Dropdown specific styles */
+/* Dropdown hidden by default */
 .dropdown-menu {
+  display: relative;
   list-style: none;
   padding: 0;
   margin: 0;
-  background-color: #f0f0f0; /* Slightly different background for dropdown */
+  background-color: #f0f0f0;
   border-top: 1px solid #e0e0e0;
+}
+
+/* Show dropdown when hovering over the parent */
+.nav-item.has-dropdown:hover .dropdown-menu {
+  display: block;
 }
 
 .dropdown-menu li a {
   display: block;
-  padding: 10px 20px 10px 40px; /* Indent dropdown items */
+  padding: 10px 20px 10px 40px;
   color: #666;
   text-decoration: none;
   transition: background-color 0.2s ease, color 0.2s ease;

@@ -46,7 +46,12 @@ mongoose.connect(DB_URL)
 
 
 const authRoutes = require('./routes/authRoutes');
+const collectionRequestRoutes = require("./routes/collectionRequestRoutes");
+
+//Routes
 app.use("/api/auth", authRoutes);
+app.use("/api/collections", collectionRequestRoutes);
+
 
 
 // Root route

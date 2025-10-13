@@ -35,8 +35,8 @@ const SideNavigation = () => {
           </div>
           {openDropdown === 'collections' && (
             <ul className="dropdown-menu">
-              <li><Link to="/collections/scheduled">Scheduled</Link></li>
-              <li><Link to="/collections/history">History</Link></li>
+              <li><Link to="/special">Schedule Collection</Link></li>
+              <li><Link to="/collection-history">Collection History</Link></li>
               {/* Add more collection-related links */}
             </ul>
           )}
@@ -50,8 +50,8 @@ const SideNavigation = () => {
           </div>
           {openDropdown === 'wasteTypes' && (
             <ul className="dropdown-menu">
-              <li><Link to="/wastetypes/manage">Manage Types</Link></li>
-              <li><Link to="/wastetypes/categories">Categories</Link></li>
+              <li><Link to="#">Manage Types</Link></li>
+              <li><Link to="#">Categories</Link></li>
               {/* Add more waste type links */}
             </ul>
           )}
@@ -61,19 +61,19 @@ const SideNavigation = () => {
         <li className="nav-item has-dropdown">
           <div className="nav-link" onClick={() => toggleDropdown('payment')}>
             {/* <FaCreditCard /> */} <span>Payment</span>
-            {/* {openDropdown === 'payment' ? <FaAngleUp /> : <FaAngleDown />} */}
+        
           </div>
           {openDropdown === 'payment' && (
             <ul className="dropdown-menu">
-              <li><Link to="/payment/history">Payment History</Link></li>
-              <li><Link to="/payment/methods">Payment Methods</Link></li>
+              <li><Link to="#">Payment History</Link></li>
+              <li><Link to="#">Payment Methods</Link></li>
             </ul>
           )}
         </li>
 
         {/* Reports */}
         <li className="nav-item">
-          <Link to="/reports" className="nav-link">
+          <Link to="#" className="nav-link">
             {/* <FaChartBar /> */} <span>Reports</span>
           </Link>
         </li>
@@ -86,8 +86,8 @@ const SideNavigation = () => {
           </div>
           {openDropdown === 'settings' && (
             <ul className="dropdown-menu">
-              <li><Link to="/settings/profile">Profile</Link></li>
-              <li><Link to="/settings/account">Account</Link></li>
+              <li><Link to="#">Profile</Link></li>
+              <li><Link to="#">Account</Link></li>
             </ul>
           )}
         </li>
@@ -100,8 +100,8 @@ const SideNavigation = () => {
           </div>
           {openDropdown === 'support' && (
             <ul className="dropdown-menu">
-              <li><Link to="/support/faq">FAQ</Link></li>
-              <li><Link to="/support/contact">Contact Us</Link></li>
+              <li><Link to="#">FAQ</Link></li>
+              <li><Link to="#">Contact Us</Link></li>
             </ul>
           )}
         </li>

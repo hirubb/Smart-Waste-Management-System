@@ -8,6 +8,9 @@ import HomePage from './pages/HomePage';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import SideNavigation from './components/SideNavigation';
+import SpecialWasteCollection from './pages/SpecialWasteCollection';
+import CollectionSummary from './pages/CollectionSummary';
+import UserCollections from './pages/UserCollections';
 
 function App() {
   return (
@@ -27,6 +30,9 @@ function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/login" element={<Login />} />
         <Route path="/home" element={<HomePage />} />
+        <Route path="/special" element={<SpecialWasteCollection />} />
+        <Route path="/collection-summary" element={<CollectionSummary />} />
+        <Route path="/collection-history" element={<UserCollections />} />
 
         {/* Protected routes */}
         <Route
