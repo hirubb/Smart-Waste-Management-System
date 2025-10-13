@@ -103,3 +103,8 @@
   padding: 2rem;
   margin-top: auto;
 }
+
+.main-content-area {
+  flex-grow: 1; /* Allows the content to fill the remaining space */
+  padding: 20px; /* Padding for the content inside the main area */
+}

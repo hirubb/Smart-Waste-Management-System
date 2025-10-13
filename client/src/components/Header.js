@@ -15,7 +15,6 @@ const Header = () => {
         color: "#fff",
         padding: "1rem 2rem",
         display: "flex",
-        justifyContent: "space-between",
         alignItems: "center",
         position: "sticky",
         top: 0,
@@ -23,26 +22,57 @@ const Header = () => {
         boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
       }}
     >
-      {/* Brand / Logo */}
-      <div>
-        <Link to="/" style={{ color: "#fff", textDecoration: "none", fontSize: "1.5rem", fontWeight: "bold" }}>
-          Smart Waste Management
+      {/* Logo */}
+      <div style={{ flex: 1 }}>
+        <Link
+          to="/"
+          style={{
+            color: "#fff",
+            textDecoration: "none",
+            fontSize: "1.5rem",
+            fontWeight: "bold",
+          }}
+        >
+          WasteWise
         </Link>
       </div>
 
-      {/* Desktop Navigation */}
-      <nav className="desktop-nav" style={{ display: "flex", alignItems: "center", gap: "1.5rem" }}>
-        <Link to="/home" style={{ color: "#fff", textDecoration: "none" }}>Home</Link>
-        <a href="#features" style={{ color: "#fff", textDecoration: "none" }}>Features</a>
-        {user && <Link to="/dashboard" style={{ color: "#fff", textDecoration: "none" }}>Dashboard</Link>}
-        <a href="#contact" style={{ color: "#fff", textDecoration: "none" }}>Contact</a>
+      {/* Desktop Navigation - centered */}
+      <nav
+        className="desktop-nav"
+        style={{
+          flex: 2,
+          display: "flex",
+          justifyContent: "center", // center the nav items
+          alignItems: "center",
+          gap: "1.5rem",
+        }}
+      >
+        <Link to="/home" style={{ color: "#fff", textDecoration: "none" }}>
+          Dashboard
+        </Link>
+        <a href="#features" style={{ color: "#fff", textDecoration: "none" }}>
+          Schedule Collection
+        </a>
+        {user && (
+          <Link to="/dashboard" style={{ color: "#fff", textDecoration: "none" }}>
+            Availability & Fees
+          </Link>
+        )}
+        <a href="#contact" style={{ color: "#fff", textDecoration: "none" }}>
+          Payment
+        </a>
+        <a href="#contact" style={{ color: "#fff", textDecoration: "none" }}>
+          Confirmation
+        </a>
+      </nav>
 
-        {/* User Section */}
+      {/* User/Login */}
+      <div style={{ flex: 1, display: "flex", justifyContent: "flex-end" }}>
         {user ? (
           <button
             onClick={logout}
             style={{
-              marginLeft: "1rem",
               backgroundColor: Colors.error,
               color: "#fff",
               border: "none",
@@ -58,7 +88,6 @@ const Header = () => {
           <Link
             to="/login"
             style={{
-              marginLeft: "1rem",
               backgroundColor: Colors.primaryButton,
               color: "#fff",
               textDecoration: "none",
@@ -69,7 +98,7 @@ const Header = () => {
             Login
           </Link>
         )}
-      </nav>
+      </div>
 
       {/* Mobile Menu Toggle */}
       <button
@@ -104,10 +133,20 @@ const Header = () => {
             padding: "1rem 0",
           }}
         >
-          <Link to="/" style={{ color: "#fff", textDecoration: "none" }}>Home</Link>
-          <a href="#features" style={{ color: "#fff", textDecoration: "none" }}>Features</a>
-          {user && <Link to="/dashboard" style={{ color: "#fff", textDecoration: "none" }}>Dashboard</Link>}
-          <a href="#contact" style={{ color: "#fff", textDecoration: "none" }}>Contact</a>
+          <Link to="/" style={{ color: "#fff", textDecoration: "none" }}>
+            Home
+          </Link>
+          <a href="#features" style={{ color: "#fff", textDecoration: "none" }}>
+            Features
+          </a>
+          {user && (
+            <Link to="/dashboard" style={{ color: "#fff", textDecoration: "none" }}>
+              Dashboard
+            </Link>
+          )}
+          <a href="#contact" style={{ color: "#fff", textDecoration: "none" }}>
+            Contact
+          </a>
           {user ? (
             <button
               onClick={logout}

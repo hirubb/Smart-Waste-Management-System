@@ -6,12 +6,20 @@ import Dashboard from './pages/Dashboard';
 import ProtectedRoute from './components/ProtectedRoute';
 import HomePage from './pages/HomePage';
 import Header from './components/Header';
+import Footer from './components/Footer';
+import SideNavigation from './components/SideNavigation';
 
 function App() {
   return (
-    <div>
+    <div style={{ display: 'flex', minHeight: '100vh' }}>
       {/* Header appears on all pages */}
-      <Header />
+      
+      <SideNavigation />
+
+      <main className="main-content-area">
+        <Header />
+
+      
 
       {/* Page content */}
       <Routes>
@@ -33,6 +41,9 @@ function App() {
         {/* Redirect unknown paths */}
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
+
+      <Footer/>
+      </main>
     </div>
   );
 }
