@@ -30,27 +30,8 @@ const HomePage = () => {
     <div
       style={{ backgroundColor: Colors.background, minHeight: "100vh" }}
     >
-      {/* Header/Navbar */}
-      <header
-        style={{
-          backgroundColor: Colors.header,
-          color: "#fff",
-          padding: "1rem 2rem",
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-        }}
-      >
-        <h1>Smart Waste Management</h1>
-        <nav>
-          <a href="#features" style={{ color: "#fff", marginRight: "1.5rem" }}>
-            Features
-          </a>
-          <a href="#contact" style={{ color: "#fff" }}>
-            Contact
-          </a>
-        </nav>
-      </header>
+      
+       
 
       {/* Hero Section */}
       <section

@@ -5,28 +5,35 @@ import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import ProtectedRoute from './components/ProtectedRoute';
 import HomePage from './pages/HomePage';
+import Header from './components/Header';
 
 function App() {
   return (
-    <Routes>
-      {/* Public routes */}
-      <Route path="/register" element={<Register />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/home" element={<HomePage/>} />
+    <div>
+      {/* Header appears on all pages */}
+      <Header />
 
-      {/* Protected routes */}
-      <Route
-        path="/dashboard"
-        element={
-          <ProtectedRoute>
-            <Dashboard />
-          </ProtectedRoute>
-        }
-      />
+      {/* Page content */}
+      <Routes>
+        {/* Public routes */}
+        <Route path="/register" element={<Register />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/home" element={<HomePage />} />
 
-      {/* Redirect unknown paths */}
-      <Route path="*" element={<Navigate to="/login" replace />} />
-    </Routes>
+        {/* Protected routes */}
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Redirect unknown paths */}
+        <Route path="*" element={<Navigate to="/login" replace />} />
+      </Routes>
+    </div>
   );
 }
 

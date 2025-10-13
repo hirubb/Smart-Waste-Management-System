@@ -26,13 +26,13 @@ const userSchema = new mongoose.Schema({
   },
   address: { 
     type: String,
-    // required: function() {
-    //   return this.role === 'resident' || this.role === 'business';
-    // }
+    required: function() {
+      return this.role === 'resident' || this.role === 'business';
+    }
   },
   contactNumber: { 
     type: String,
-    // required: [true, 'Contact number is required']
+    required: [true, 'Contact number is required']
   },
   accountStatus: { 
     type: String, 

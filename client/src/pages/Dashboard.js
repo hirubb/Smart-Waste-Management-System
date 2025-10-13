@@ -1,28 +1,108 @@
 import React, { useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
+import Colors from "../constants/colors";
 
 const Dashboard = () => {
   const { user, logout } = useContext(AuthContext);
 
+  // Features per role
+  const roleFeatures = {
+    resident: [
+      "Schedule special collection",
+      "View bin alerts",
+      "Track your waste generation",
+    ],
+    business: [
+      "Business-specific dashboard",
+      "Manage multiple waste bins",
+      "Generate waste reports",
+    ],
+    collector: [
+      "View assigned routes",
+      "Update collection status",
+      "Access route history",
+    ],
+    wma_admin: [
+      "Optimize collection routes",
+      "View reports and analytics",
+      "Manage users and collectors",
+    ],
+  };
+
   return (
-    <div>
-      <h1>Welcome, {user?.name}</h1>
-      <p>Role: {user?.role}</p>
+    <div style={{ backgroundColor: Colors.background, minHeight: "100vh", padding: "2rem" }}>
+      {/* Header */}
+      <header
+        style={{
+          backgroundColor: Colors.header,
+          color: "#fff",
+          padding: "1rem 2rem",
+          borderRadius: "12px",
+          marginBottom: "2rem",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+        }}
+      >
+        <h1>Dashboard</h1>
+        <button
+          onClick={logout}
+          style={{
+            backgroundColor: Colors.error,
+            color: "#fff",
+            padding: "0.5rem 1.2rem",
+            border: "none",
+            borderRadius: "8px",
+            cursor: "pointer",
+            fontWeight: "bold",
+          }}
+        >
+          Logout
+        </button>
+      </header>
 
-      {user?.role === "resident" && (
-        <p>Resident features: schedule special collection, view bin alerts</p>
-      )}
-      {user?.role === "business" && (
-        <p>Business features: business-specific dashboard</p>
-      )}
-      {user?.role === "collector" && (
-        <p>Collector features: view assigned routes</p>
-      )}
-      {user?.role === "wma_admin" && (
-        <p>Admin features: route optimization, reports</p>
-      )}
+      {/* Welcome Section */}
+      <section
+        style={{
+          textAlign: "center",
+          marginBottom: "3rem",
+        }}
+      >
+        <h2 style={{ color: Colors.textPrimary, fontSize: "2rem", marginBottom: "0.5rem" }}>
+          Welcome, {user?.name}
+        </h2>
+        <p style={{ color: Colors.textSecondary, fontSize: "1.1rem" }}>
+          Role: <strong>{user?.role}</strong>
+        </p>
+      </section>
 
-      <button onClick={logout}>Logout</button>
+      {/* Features Section */}
+      <section
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(250px, 1fr))",
+          gap: "1.5rem",
+        }}
+      >
+        {roleFeatures[user?.role]?.map((feature, idx) => (
+          <div
+            key={idx}
+            style={{
+              backgroundColor: Colors.card,
+              padding: "1.8rem",
+              borderRadius: "16px",
+              boxShadow: "0 6px 20px rgba(0,0,0,0.1)",
+              textAlign: "center",
+              transition: "transform 0.2s",
+            }}
+            className="feature-card"
+            onMouseEnter={(e) => (e.currentTarget.style.transform = "translateY(-5px)")}
+            onMouseLeave={(e) => (e.currentTarget.style.transform = "translateY(0)")}
+          >
+            <h3 style={{ color: Colors.textPrimary, marginBottom: "0.5rem" }}>{feature}</h3>
+          </div>
+        ))}
+      </section>
     </div>
   );
 };
