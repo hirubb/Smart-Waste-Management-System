@@ -1,0 +1,105 @@
+/* General App */
+.App {
+  text-align: center;
+  min-height: 100vh;
+  background-color: #F5F5F5; /* Colors.background */
+  display: flex;
+  flex-direction: column;
+}
+
+/* Header / Navbar */
+.App-header {
+  background-color: #2196F3; /* Colors.header */
+  color: #fff;
+  padding: 1rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.App-header nav a {
+  color: #fff;
+  margin-right: 1.5rem;
+  text-decoration: none;
+}
+
+.App-header nav a:last-child {
+  margin-right: 0;
+}
+
+/* Hero Section */
+.Hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 4rem 2rem;
+  background-color: rgba(76, 175, 80, 0.2); /* Colors.primaryButton + transparency */
+}
+
+.Hero h2 {
+  color: #212121; /* Colors.textPrimary */
+  font-size: 2.5rem;
+}
+
+.Hero p {
+  color: #757575; /* Colors.textSecondary */
+  font-size: 1.2rem;
+  max-width: 600px;
+  margin: 1rem 0;
+}
+
+.Hero button {
+  background-color: #4CAF50; /* Colors.primaryButton */
+  color: #fff;
+  padding: 0.8rem 2rem;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+  margin-top: 1rem;
+  transition: all 0.2s ease-in-out;
+}
+
+.Hero button:hover {
+  transform: scale(1.05);
+}
+
+/* Features Section */
+.Features {
+  padding: 4rem 2rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 2rem;
+}
+
+.feature-card {
+  background-color: #FFFFFF; /* Colors.card */
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.feature-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+.feature-card h3 {
+  color: #212121; /* Colors.textPrimary */
+}
+
+.feature-card p {
+  color: #757575; /* Colors.textSecondary */
+}
+
+/* Footer */
+.App-footer {
+  background-color: #2196F3; /* Colors.header */
+  color: #fff;
+  text-align: center;
+  padding: 2rem;
+  margin-top: auto;
+}
