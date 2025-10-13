@@ -30,9 +30,6 @@ const HomePage = () => {
     <div
       style={{ backgroundColor: Colors.background, minHeight: "100vh" }}
     >
-      
-       
-
       {/* Hero Section */}
       <section
         style={{
