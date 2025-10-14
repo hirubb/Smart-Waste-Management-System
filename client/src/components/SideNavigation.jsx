@@ -175,10 +175,10 @@ const SideNavigation = () => {
               {openDropdown === "payment" && (
                 <ul className="dropdown-menu">
                   <li>
-                    <Link to="#">Payment History</Link>
+                    <Link to="/payment-history">Payment History</Link>
                   </li>
                   <li>
-                    <Link to="#">Payment Methods</Link>
+                    <Link to="/payment-methods">Payment Methods</Link>
                   </li>
                 </ul>
               )}
