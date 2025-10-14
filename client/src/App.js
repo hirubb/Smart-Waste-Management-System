@@ -13,6 +13,7 @@ import CollectionSummary from './pages/CollectionSummary';
 import UserCollections from './pages/UserCollections';
 import ManagerProfile from './pages/ManagerProfile';
 import AssignCollectors from './pages/AssignCollectors';
+import AdminDashboard from './pages/AdminDashboard';
 
 function App() {
   return (
@@ -40,7 +41,8 @@ function App() {
         {/* Protected routes */}
         <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
         <Route path="/manager/profile" element={<ProtectedRoute><ManagerProfile /></ProtectedRoute>} />
-         <Route path="/assign-collectors" element={<ProtectedRoute><AssignCollectors /></ProtectedRoute>} />
+        <Route path="/assign-collectors" element={<ProtectedRoute><AssignCollectors /></ProtectedRoute>} />
+        <Route path="/admin-dashboard" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
 
         {/* Redirect unknown paths */}
         <Route path="*" element={<Navigate to="/login" replace />} />
