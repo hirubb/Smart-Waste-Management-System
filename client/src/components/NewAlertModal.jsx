@@ -1,9 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Modal, Form, Button, Row, Col, Alert } from "react-bootstrap";
 import { FaBell, FaMapMarkerAlt } from "react-icons/fa";
 import axios from "axios";
 
-const NewAlertModal = ({ show, handleClose, onAlertCreated }) => {
+const NewAlertModal = ({ show, handleClose, onAlertCreated, editAlert = null }) => {
   const [formData, setFormData] = useState({
     binId: "",
     location: "",
@@ -15,11 +15,46 @@ const NewAlertModal = ({ show, handleClose, onAlertCreated }) => {
     assignedTo: "",
     notes: "",
     binCapacity: "",
+    status: "Open",
   });
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+
+  // Populate form when editing
+  useEffect(() => {
+    if (editAlert) {
+      setFormData({
+        binId: editAlert.binId || "",
+        location: editAlert.location || "",
+        latitude: editAlert.latitude || "",
+        longitude: editAlert.longitude || "",
+        severity: editAlert.severity || "Medium",
+        type: editAlert.type || "Bin Full",
+        description: editAlert.description || "",
+        assignedTo: editAlert.assignedTo || "",
+        notes: editAlert.notes || "",
+        binCapacity: editAlert.binCapacity || "",
+        status: editAlert.status || "Open",
+      });
+    } else {
+      // Reset form for new alert
+      setFormData({
+        binId: "",
+        location: "",
+        latitude: "",
+        longitude: "",
+        severity: "Medium",
+        type: "Bin Full",
+        description: "",
+        assignedTo: "",
+        notes: "",
+        binCapacity: "",
+        status: "Open",
+      });
+    }
+  }, [editAlert, show]);
 
   const severityOptions = ["Critical", "High", "Medium", "Low"];
   const typeOptions = [
@@ -64,6 +99,7 @@ const NewAlertModal = ({ show, handleClose, onAlertCreated }) => {
         severity: formData.severity,
         type: formData.type,
         description: formData.description,
+        status: formData.status,
       };
 
       // Add optional fields if provided
@@ -73,39 +109,34 @@ const NewAlertModal = ({ show, handleClose, onAlertCreated }) => {
       if (formData.notes) alertData.notes = formData.notes;
       if (formData.binCapacity) alertData.binCapacity = parseFloat(formData.binCapacity);
 
-      const response = await axios.post("http://localhost:4000/api/alerts", alertData);
-
-      if (response.data.success) {
-        setSuccess("Alert created successfully!");
-        
-        // Reset form
-        setFormData({
-          binId: "",
-          location: "",
-          latitude: "",
-          longitude: "",
-          severity: "Medium",
-          type: "Bin Full",
-          description: "",
-          assignedTo: "",
-          notes: "",
-          binCapacity: "",
-        });
-
-        // Notify parent component
-        if (onAlertCreated) {
-          onAlertCreated(response.data.alert);
+      let response;
+      if (editAlert) {
+        // Update existing alert
+        response = await axios.put(`http://localhost:4000/api/alerts/${editAlert._id}`, alertData);
+        if (response.data.success) {
+          setSuccess("Alert updated successfully!");
         }
-
-        // Close modal after short delay
-        setTimeout(() => {
-          handleClose();
-          setSuccess("");
-        }, 1500);
+      } else {
+        // Create new alert
+        response = await axios.post("http://localhost:4000/api/alerts", alertData);
+        if (response.data.success) {
+          setSuccess("Alert created successfully!");
+        }
       }
+
+      // Notify parent component
+      if (onAlertCreated) {
+        onAlertCreated(response.data.alert);
+      }
+
+      // Close modal after short delay
+      setTimeout(() => {
+        handleClose();
+        setSuccess("");
+      }, 1500);
     } catch (err) {
-      console.error("Error creating alert:", err);
-      setError(err.response?.data?.message || "Failed to create alert. Please try again.");
+      console.error(`Error ${editAlert ? 'updating' : 'creating'} alert:`, err);
+      setError(err.response?.data?.message || `Failed to ${editAlert ? 'update' : 'create'} alert. Please try again.`);
     } finally {
       setLoading(false);
     }
@@ -114,27 +145,17 @@ const NewAlertModal = ({ show, handleClose, onAlertCreated }) => {
   const handleModalClose = () => {
     setError("");
     setSuccess("");
-    setFormData({
-      binId: "",
-      location: "",
-      latitude: "",
-      longitude: "",
-      severity: "Medium",
-      type: "Bin Full",
-      description: "",
-      assignedTo: "",
-      notes: "",
-      binCapacity: "",
-    });
     handleClose();
   };
+
+  const statusOptions = ["Open", "In Progress", "Resolved"];
 
   return (
     <Modal show={show} onHide={handleModalClose} size="lg" centered>
       <Modal.Header closeButton className="bg-primary text-white">
         <Modal.Title>
           <FaBell className="me-2" />
-          Create New Alert
+          {editAlert ? 'Edit Alert' : 'Create New Alert'}
         </Modal.Title>
       </Modal.Header>
 
@@ -189,7 +210,7 @@ const NewAlertModal = ({ show, handleClose, onAlertCreated }) => {
 
           <Row>
             {/* Alert Type */}
-            <Col md={6}>
+            <Col md={editAlert ? 4 : 6}>
               <Form.Group className="mb-3">
                 <Form.Label>
                   Alert Type <span className="text-danger">*</span>
@@ -204,8 +225,26 @@ const NewAlertModal = ({ show, handleClose, onAlertCreated }) => {
               </Form.Group>
             </Col>
 
+            {/* Status - Only show when editing */}
+            {editAlert && (
+              <Col md={4}>
+                <Form.Group className="mb-3">
+                  <Form.Label>
+                    Status <span className="text-danger">*</span>
+                  </Form.Label>
+                  <Form.Select name="status" value={formData.status} onChange={handleChange} required>
+                    {statusOptions.map((option) => (
+                      <option key={option} value={option}>
+                        {option}
+                      </option>
+                    ))}
+                  </Form.Select>
+                </Form.Group>
+              </Col>
+            )}
+
             {/* Bin Capacity */}
-            <Col md={6}>
+            <Col md={editAlert ? 4 : 6}>
               <Form.Group className="mb-3">
                 <Form.Label>Bin Capacity (%)</Form.Label>
                 <Form.Control
@@ -289,14 +328,16 @@ const NewAlertModal = ({ show, handleClose, onAlertCreated }) => {
           {/* Assigned To */}
           <Form.Group className="mb-3">
             <Form.Label>Assigned To (Optional)</Form.Label>
-            <Form.Control
-              type="text"
+            <Form.Select
               name="assignedTo"
-              placeholder="e.g., John Doe"
               value={formData.assignedTo}
               onChange={handleChange}
-            />
-            <Form.Text className="text-muted">Assign this alert to a specific person</Form.Text>
+            >
+              <option value="">Select Role...</option>
+              <option value="Waste Collector">Waste Collector</option>
+              <option value="WMA Manager/Admin">WMA Manager/Admin</option>
+            </Form.Select>
+            <Form.Text className="text-muted">Assign this alert to a specific role</Form.Text>
           </Form.Group>
 
           {/* Notes */}
@@ -322,12 +363,12 @@ const NewAlertModal = ({ show, handleClose, onAlertCreated }) => {
           {loading ? (
             <>
               <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-              Creating...
+              {editAlert ? 'Updating...' : 'Creating...'}
             </>
           ) : (
             <>
               <FaBell className="me-2" />
-              Create Alert
+              {editAlert ? 'Update Alert' : 'Create Alert'}
             </>
           )}
         </Button>
