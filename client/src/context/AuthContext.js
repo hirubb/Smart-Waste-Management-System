@@ -9,12 +9,20 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     const token = localStorage.getItem("token");
+    const role = localStorage.getItem("role");
+
     if (token) {
-      // fetch /me
       API.get("/auth/me")
-        .then((res) => setUser(res.data.user))
+        .then((res) => {
+          setUser(res.data.user);
+          // Update stored role if needed
+          if (res.data.user.role) {
+            localStorage.setItem("role", res.data.user.role);
+          }
+        })
         .catch(() => {
           localStorage.removeItem("token");
+          localStorage.removeItem("role");
         })
         .finally(() => setLoading(false));
     } else {
@@ -25,17 +33,20 @@ export const AuthProvider = ({ children }) => {
   const login = async (email, password) => {
     const res = await API.post("/auth/login", { email, password });
     localStorage.setItem("token", res.data.token);
+    localStorage.setItem("role", res.data.user.role); // ✅ store role
     setUser(res.data.user);
   };
 
   const register = async (form) => {
     const res = await API.post("/auth/register", form);
     localStorage.setItem("token", res.data.token);
+    localStorage.setItem("role", res.data.user.role); // ✅ store role
     setUser(res.data.user);
   };
 
   const logout = () => {
     localStorage.removeItem("token");
+    localStorage.removeItem("role"); // ✅ remove role on logout
     setUser(null);
   };
 
@@ -44,4 +55,6 @@ export const AuthProvider = ({ children }) => {
       {children}
     </AuthContext.Provider>
   );
+
+  
 };
