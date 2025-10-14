@@ -48,11 +48,13 @@ mongoose.connect(DB_URL)
 const authRoutes = require('./routes/authRoutes');
 const collectionRequestRoutes = require("./routes/collectionRequestRoutes");
 const paymentRoutes = require("./routes/paymentRoutes");
+const alertRoutes = require("./routes/alertRoutes");
 
 //Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/collections", collectionRequestRoutes);
 app.use("/api/payments", paymentRoutes);
+app.use("/api/alerts", alertRoutes);
 
 
 

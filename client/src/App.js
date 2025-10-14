@@ -13,6 +13,7 @@ import CollectionSummary from './pages/CollectionSummary';
 import UserCollections from './pages/UserCollections';
 import PaymentHistory from './pages/PaymentHistory';
 import PaymentMethods from './pages/PaymentMethods';
+import AlertManagement from './pages/AlertManagement';
 
 function App() {
   return (
@@ -38,6 +39,7 @@ function App() {
         <Route path="/user-collections" element={<UserCollections />} />
         <Route path="/payment-history" element={<PaymentHistory />} />
         <Route path="/payment-methods" element={<PaymentMethods />} />
+        <Route path="/alert-management" element={<AlertManagement />} />
 
         {/* Protected routes */}
         <Route
