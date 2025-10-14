@@ -1,19 +1,53 @@
+/**
+ * Login Component
+ * 
+ * Purpose: User authentication interface
+ * Responsibilities:
+ * - Handle user login form
+ * - Support both email and username authentication
+ * - Redirect to appropriate dashboard based on role
+ * 
+ * @component
+ * @author Smart Waste Management System
+ * @since 2025-10-15
+ */
+
 import React, { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import Colors from "../constants/colors";
 import "../App.css";
 
+/**
+ * Login Component
+ * Supports authentication for all user types including waste manager
+ */
 const Login = () => {
-  const [form, setForm] = useState({ email: "", password: "" });
+  // Form state - supports both email and username
+  const [form, setForm] = useState({ identifier: "", password: "" });
   const { login } = useContext(AuthContext);
   const nav = useNavigate();
 
+  /**
+   * Handles form submission
+   * Routes user to appropriate dashboard based on role
+   * 
+   * @param {Event} e - Form submit event
+   */
   const submit = async (e) => {
     e.preventDefault();
     try {
-      await login(form.email, form.password);
-      nav("/dashboard");
+      await login(form.identifier, form.password);
+      
+      // Get user role from localStorage to determine redirect
+      const role = localStorage.getItem("role");
+      
+      // Route based on role following Single Responsibility Principle
+      if (role === "waste_manager") {
+        nav("/waste-manager-dashboard");
+      } else {
+        nav("/dashboard");
+      }
     } catch (err) {
       alert(err.response?.data?.message || "Login failed");
     }
@@ -46,11 +80,12 @@ const Login = () => {
         </h2>
 
         <form onSubmit={submit} style={{ display: "flex", flexDirection: "column" }}>
+          {/* Email or Username Input */}
           <input
-            type="email"
-            placeholder="Email"
-            value={form.email}
-            onChange={(e) => setForm({ ...form, email: e.target.value })}
+            type="text"
+            placeholder="Email or Username"
+            value={form.identifier}
+            onChange={(e) => setForm({ ...form, identifier: e.target.value })}
             required
             style={{
               padding: "0.8rem 1rem",
