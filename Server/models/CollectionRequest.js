@@ -10,6 +10,10 @@ const collectionRequestSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId, 
     ref: 'WasteBin' 
   },
+  quantity:{
+    type: Number,
+    default: 0
+  },
   requestType: { 
     type: String, 
     enum: ['regular', 'special'], 

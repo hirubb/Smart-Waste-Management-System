@@ -1,7 +1,7 @@
 import React from "react";
 import { Navigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
-
+ 
 const ProtectedRoute = ({ children, roles = [] }) => {
   const { user, loading } = React.useContext(AuthContext);
   if (loading) return <div>Loading...</div>;
@@ -10,5 +10,6 @@ const ProtectedRoute = ({ children, roles = [] }) => {
     return <Navigate to="/" replace />;
   return children;
 };
-
+ 
+ 
 export default ProtectedRoute;

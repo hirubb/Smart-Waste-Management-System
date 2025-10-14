@@ -45,20 +45,7 @@ const Dashboard = () => {
         }}
       >
         <h1>Dashboard</h1>
-        <button
-          onClick={logout}
-          style={{
-            backgroundColor: Colors.error,
-            color: "#fff",
-            padding: "0.5rem 1.2rem",
-            border: "none",
-            borderRadius: "8px",
-            cursor: "pointer",
-            fontWeight: "bold",
-          }}
-        >
-          Logout
-        </button>
+        
       </header>
 
       {/* Welcome Section */}

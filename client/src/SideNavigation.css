@@ -1,0 +1,87 @@
+.side-navigation {
+  width: 250px;
+  background-color: #f8f8f8;
+  padding: 40px 0;
+  box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+  top: 0;
+  left: 0;
+  overflow-y: auto;
+
+}
+
+.navigation-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 20px 20px;
+  border-bottom: 1px solid #eee;
+  margin-bottom: 10px;
+}
+
+.navigation-header h3 {
+  margin: 0;
+  color: #333;
+}
+
+.menu-toggle-button {
+  background: none;
+  border: none;
+  font-size: 1.5em;
+  cursor: pointer;
+  color: #555;
+}
+
+.nav-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.nav-item {
+  position: relative;
+  margin-bottom: 5px;
+}
+
+.nav-item .nav-link {
+  display: flex;
+  align-items: center;
+  padding: 12px 20px;
+  color: #555;
+  text-decoration: none;
+  font-size: 1em;
+  transition: background-color 0.2s ease, color 0.2s ease;
+  cursor: pointer;
+}
+
+.nav-item .nav-link:hover {
+  background-color: #e0e0e0;
+  color: #333;
+}
+
+/* Dropdown hidden by default */
+.dropdown-menu {
+  display: relative;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  background-color: #f0f0f0;
+  border-top: 1px solid #e0e0e0;
+}
+
+/* Show dropdown when hovering over the parent */
+.nav-item.has-dropdown:hover .dropdown-menu {
+  display: block;
+}
+
+.dropdown-menu li a {
+  display: block;
+  padding: 10px 20px 10px 40px;
+  color: #666;
+  text-decoration: none;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.dropdown-menu li a:hover {
+  background-color: #e5e5e5;
+  color: #333;
+}

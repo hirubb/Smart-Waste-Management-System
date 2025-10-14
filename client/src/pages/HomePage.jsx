@@ -30,9 +30,6 @@ const HomePage = () => {
     <div
       style={{ backgroundColor: Colors.background, minHeight: "100vh" }}
     >
-      
-       
-
       {/* Hero Section */}
       <section
         style={{
@@ -95,19 +92,6 @@ const HomePage = () => {
         ))}
       </section>
 
-      {/* Footer */}
-      <footer
-        id="contact"
-        style={{
-          backgroundColor: Colors.header,
-          color: "#fff",
-          textAlign: "center",
-          padding: "2rem",
-          marginTop: "auto",
-        }}
-      >
-        <p>© 2025 Smart Waste Management System</p>
-      </footer>
     </div>
   );
 };
