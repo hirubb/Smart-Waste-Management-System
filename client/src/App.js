@@ -1,5 +1,5 @@
 import React from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import Register from './pages/Register';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
@@ -16,14 +16,18 @@ import PaymentMethods from './pages/PaymentMethods';
 import AlertManagement from './pages/AlertManagement';
 
 function App() {
+  const location = useLocation();
+  const isAlertManagementPage = location.pathname === '/alert-management';
+
   return (
     <div style={{ display: 'flex', minHeight: '100vh' }}>
-      {/* Header appears on all pages */}
+      {/* Side Navigation appears on all pages */}
       
       <SideNavigation />
 
       <main className="main-content-area">
-        <Header />
+        {/* Header appears on all pages except Alert Management */}
+        {!isAlertManagementPage && <Header />}
 
       
 
@@ -55,7 +59,7 @@ function App() {
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
 
-      <Footer/>
+      {!isAlertManagementPage && <Footer/>}
       </main>
     </div>
   );

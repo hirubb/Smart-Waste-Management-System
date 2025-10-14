@@ -1,8 +1,10 @@
-import React, { useState, useEffect } from "react";
-import { Container, Row, Col, Card, Table, Badge, Button, Form, InputGroup, Dropdown } from "react-bootstrap";
-import { FaBell, FaSearch, FaPlus, FaSync, FaEllipsisV, FaUserCircle } from "react-icons/fa";
+import React, { useState, useEffect, useContext } from "react";
+import { Container, Row, Col, Card, Table, Badge, Button, Form, InputGroup, Modal, Navbar, Nav } from "react-bootstrap";
+import { FaBell, FaSearch, FaPlus, FaSync, FaUserCircle, FaEdit, FaTrash, FaExclamationTriangle, FaInfoCircle, FaCheckCircle } from "react-icons/fa";
 import { Line, Pie } from "react-chartjs-2";
+import { Link, useNavigate } from "react-router-dom";
 import NewAlertModal from "../components/NewAlertModal";
+import { AuthContext } from "../context/AuthContext";
 import axios from "axios";
 import {
   Chart as ChartJS,
@@ -31,6 +33,9 @@ ChartJS.register(
 );
 
 const AlertManagement = () => {
+  const { user, logout } = useContext(AuthContext);
+  const navigate = useNavigate();
+
   // State management
   const [alerts, setAlerts] = useState([]);
   const [filteredAlerts, setFilteredAlerts] = useState([]);
@@ -44,6 +49,10 @@ const AlertManagement = () => {
   const [itemsPerPage] = useState(10);
   const [timeFilter, setTimeFilter] = useState("This Month");
   const [showNewAlertModal, setShowNewAlertModal] = useState(false);
+  const [editingAlert, setEditingAlert] = useState(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [alertToDelete, setAlertToDelete] = useState(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
   // Fetch alerts from API
   useEffect(() => {
@@ -59,7 +68,9 @@ const AlertManagement = () => {
         // Format the dates for display
         const formattedAlerts = response.data.alerts.map(alert => ({
           ...alert,
-          id: alert._id,
+          id: alert.alertId || alert._id, // Use alertId for display
+          _id: alert._id, // Keep MongoDB ID for API operations
+          createdAtOriginal: alert.createdAt, // Keep original date for filtering
           createdAt: new Date(alert.createdAt).toLocaleString('en-US', {
             year: 'numeric',
             month: '2-digit',
@@ -84,6 +95,43 @@ const AlertManagement = () => {
   const handleAlertCreated = (newAlert) => {
     // Refresh the alerts list
     fetchAlerts();
+    setEditingAlert(null);
+  };
+
+  const handleEditClick = (alert) => {
+    setEditingAlert(alert);
+    setShowNewAlertModal(true);
+  };
+
+  const handleDeleteClick = (alert) => {
+    setAlertToDelete(alert);
+    setShowDeleteModal(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!alertToDelete) return;
+
+    try {
+      setDeleteLoading(true);
+      const response = await axios.delete(`http://localhost:4000/api/alerts/${alertToDelete._id}`);
+      
+      if (response.data.success) {
+        // Refresh the alerts list
+        fetchAlerts();
+        setShowDeleteModal(false);
+        setAlertToDelete(null);
+      }
+    } catch (error) {
+      console.error("Error deleting alert:", error);
+      alert("Failed to delete alert. Please try again.");
+    } finally {
+      setDeleteLoading(false);
+    }
+  };
+
+  const handleModalClose = () => {
+    setShowNewAlertModal(false);
+    setEditingAlert(null);
   };
 
   // Filter alerts based on search and filters
@@ -93,10 +141,11 @@ const AlertManagement = () => {
     // Search filter
     if (searchTerm) {
       filtered = filtered.filter(alert =>
-        alert.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        alert.binId.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        alert.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        alert.assignedTo.toLowerCase().includes(searchTerm.toLowerCase())
+        (alert.id && alert.id.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (alert.alertId && alert.alertId.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (alert.binId && alert.binId.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (alert.location && alert.location.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        (alert.assignedTo && alert.assignedTo.toLowerCase().includes(searchTerm.toLowerCase()))
       );
     }
 
@@ -115,9 +164,31 @@ const AlertManagement = () => {
       filtered = filtered.filter(alert => alert.type === selectedType);
     }
 
+    // Time filter
+    if (selectedTime !== "all") {
+      const now = new Date();
+      filtered = filtered.filter(alert => {
+        const alertDate = new Date(alert.createdAtOriginal || alert.createdAt);
+        
+        switch (selectedTime) {
+          case "today":
+            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            return alertDate >= today;
+          case "week":
+            const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+            return alertDate >= weekAgo;
+          case "month":
+            const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+            return alertDate >= monthAgo;
+          default:
+            return true;
+        }
+      });
+    }
+
     setFilteredAlerts(filtered);
     setCurrentPage(1);
-  }, [searchTerm, selectedSeverity, selectedStatus, selectedType, alerts]);
+  }, [searchTerm, selectedSeverity, selectedStatus, selectedType, selectedTime, alerts]);
 
   // Pagination
   const indexOfLastItem = currentPage * itemsPerPage;
@@ -172,12 +243,18 @@ const AlertManagement = () => {
 
   const getSeverityBadge = (severity) => {
     const variants = {
-      Critical: 'danger',
-      High: 'warning',
-      Medium: 'primary',
-      Low: 'success'
+      Critical: { bg: 'danger', icon: <FaExclamationTriangle className="me-1" /> },
+      High: { bg: 'warning', icon: <FaExclamationTriangle className="me-1" /> },
+      Medium: { bg: 'primary', icon: <FaInfoCircle className="me-1" /> },
+      Low: { bg: 'success', icon: <FaCheckCircle className="me-1" /> }
     };
-    return <Badge bg={variants[severity]}>{severity}</Badge>;
+    const config = variants[severity] || variants.Medium;
+    return (
+      <Badge bg={config.bg}>
+        {config.icon}
+        {severity}
+      </Badge>
+    );
   };
 
   const getStatusBadge = (status) => {
@@ -186,26 +263,116 @@ const AlertManagement = () => {
       'In Progress': 'info',
       Resolved: 'success'
     };
-    const labels = {
-      Open: 'Open',
-      'In Progress': 'In Progress',
-      Resolved: 'Resolved'
-    };
-    return <Badge bg={variants[status]} style={{ minWidth: '90px' }}>{labels[status]}</Badge>;
+    return (
+      <Badge bg={variants[status]} style={{ minWidth: '90px' }}>
+        {status}
+      </Badge>
+    );
   };
 
   const handleRefresh = () => {
     fetchAlerts();
   };
 
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
+
   return (
-    <Container fluid className="py-4" style={{ backgroundColor: '#f8f9fa', minHeight: '100vh' }}>
-      {/* Breadcrumb */}
-      <div className="mb-3">
-        <span className="text-muted">Dashboard</span>
-        <span className="mx-2 text-muted">{'>'}</span>
-        <span className="fw-bold">Alert Management</span>
-      </div>
+    <>
+      {/* Custom Navigation Bar */}
+      <Navbar bg="white" expand="lg" className="shadow-sm px-4 py-3" style={{ borderBottom: '2px solid #e0e0e0' }}>
+        <Container fluid>
+          {/* WasteWise Logo */}
+          <Navbar.Brand as={Link} to="/dashboard" className="fw-bold" style={{ fontSize: '1.5rem', color: '#2c3e50' }}>
+            WasteWise
+          </Navbar.Brand>
+
+          <Navbar.Toggle aria-controls="alert-navbar" />
+          
+          <Navbar.Collapse id="alert-navbar">
+            {/* Center Navigation Links */}
+            <Nav className="mx-auto">
+              <Nav.Link as={Link} to="/dashboard" className="mx-2 px-3 py-2" style={{ 
+                border: '1px solid #d0d0d0', 
+                borderRadius: '4px',
+                color: '#333',
+                fontWeight: '500'
+              }}>
+                Dashboard
+              </Nav.Link>
+              <Nav.Link as={Link} to="/live-monitor" className="mx-2 px-3 py-2" style={{ 
+                border: '1px solid #d0d0d0', 
+                borderRadius: '4px',
+                color: '#333',
+                fontWeight: '500'
+              }}>
+                Live Monitor
+              </Nav.Link>
+              <Nav.Link as={Link} to="/alert-management" className="mx-2 px-3 py-2" style={{ 
+                border: '1px solid #d0d0d0', 
+                borderRadius: '4px',
+                color: '#333',
+                fontWeight: '500',
+                backgroundColor: '#f0f0f0'
+              }}>
+                Alerts
+              </Nav.Link>
+              <Nav.Link as={Link} to="/reports" className="mx-2 px-3 py-2" style={{ 
+                border: '1px solid #d0d0d0', 
+                borderRadius: '4px',
+                color: '#333',
+                fontWeight: '500'
+              }}>
+                Reports
+              </Nav.Link>
+              <Nav.Link as={Link} to="/settings" className="mx-2 px-3 py-2" style={{ 
+                border: '1px solid #d0d0d0', 
+                borderRadius: '4px',
+                color: '#333',
+                fontWeight: '500'
+              }}>
+                Settings
+              </Nav.Link>
+            </Nav>
+
+            {/* Right side - Notification and User */}
+            <Nav className="align-items-center">
+              <div className="position-relative me-3">
+                <Button variant="link" className="text-dark p-2">
+                  <FaBell size={20} />
+                  <Badge bg="danger" pill className="position-absolute top-0 start-100 translate-middle" style={{ fontSize: '0.6rem' }}>
+                    3
+                  </Badge>
+                </Button>
+              </div>
+              <div className="d-flex align-items-center">
+                <div className="bg-dark text-white rounded-circle d-flex align-items-center justify-content-center me-2" 
+                     style={{ width: '35px', height: '35px', fontSize: '1rem' }}>
+                  {user?.name?.charAt(0).toUpperCase() || 'A'}
+                </div>
+                <Button 
+                  variant="outline-danger" 
+                  size="sm" 
+                  onClick={handleLogout}
+                  className="ms-2"
+                >
+                  Logout
+                </Button>
+              </div>
+            </Nav>
+          </Navbar.Collapse>
+        </Container>
+      </Navbar>
+
+      <Container fluid className="py-4" style={{ backgroundColor: '#f8f9fa', minHeight: '100vh' }}>
+        {/* Breadcrumb */}
+        <div className="mb-3">
+          <span className="text-muted">Dashboard</span>
+          <span className="mx-2 text-muted">{'>'}</span>
+          <span className="fw-bold">Alert Management</span>
+        </div>
 
       {/* Header */}
       <div className="mb-4">
@@ -218,8 +385,8 @@ const AlertManagement = () => {
       {/* Filters and Actions */}
       <Card className="mb-4 border-0 shadow-sm">
         <Card.Body>
-          <Row className="align-items-center">
-            <Col md={3}>
+          <Row className="align-items-center g-2">
+            <Col lg={3} md={12}>
               <InputGroup>
                 <InputGroup.Text className="bg-white">
                   <FaSearch />
@@ -231,10 +398,11 @@ const AlertManagement = () => {
                 />
               </InputGroup>
             </Col>
-            <Col md={2}>
+            <Col lg="auto" md={6} sm={6}>
               <Form.Select
                 value={selectedSeverity}
                 onChange={(e) => setSelectedSeverity(e.target.value)}
+                style={{ minWidth: '140px' }}
               >
                 <option value="all">🔔 Severity</option>
                 <option value="Critical">Critical</option>
@@ -243,10 +411,11 @@ const AlertManagement = () => {
                 <option value="Low">Low</option>
               </Form.Select>
             </Col>
-            <Col md={2}>
+            <Col lg="auto" md={6} sm={6}>
               <Form.Select
                 value={selectedStatus}
                 onChange={(e) => setSelectedStatus(e.target.value)}
+                style={{ minWidth: '140px' }}
               >
                 <option value="all">📊 Status</option>
                 <option value="Open">Open</option>
@@ -254,10 +423,11 @@ const AlertManagement = () => {
                 <option value="Resolved">Resolved</option>
               </Form.Select>
             </Col>
-            <Col md={2}>
+            <Col lg="auto" md={6} sm={6}>
               <Form.Select
                 value={selectedType}
                 onChange={(e) => setSelectedType(e.target.value)}
+                style={{ minWidth: '150px' }}
               >
                 <option value="all">🗂️ Type</option>
                 <option value="Bin Full">Bin Full</option>
@@ -266,10 +436,11 @@ const AlertManagement = () => {
                 <option value="Fire Hazard">Fire Hazard</option>
               </Form.Select>
             </Col>
-            <Col md={1}>
+            <Col lg="auto" md={6} sm={6}>
               <Form.Select
                 value={selectedTime}
                 onChange={(e) => setSelectedTime(e.target.value)}
+                style={{ minWidth: '120px' }}
               >
                 <option value="all">⏰ Time</option>
                 <option value="today">Today</option>
@@ -277,13 +448,13 @@ const AlertManagement = () => {
                 <option value="month">This Month</option>
               </Form.Select>
             </Col>
-            <Col md={2} className="text-end">
-              <Button variant="primary" className="me-2" onClick={() => setShowNewAlertModal(true)}>
-                <FaPlus className="me-2" />
+            <Col lg="auto" md={12} className="d-flex justify-content-end gap-2 ms-auto">
+              <Button variant="primary" onClick={() => setShowNewAlertModal(true)}>
+                <FaPlus className="me-1" />
                 New Alert
               </Button>
               <Button variant="outline-secondary" onClick={handleRefresh}>
-                <FaSync className="me-2" />
+                <FaSync className="me-1" />
                 Refresh
               </Button>
             </Col>
@@ -355,9 +526,26 @@ const AlertManagement = () => {
                       </div>
                     </td>
                     <td>
-                      <Button variant="link" size="sm" className="text-secondary p-0">
-                        <FaEllipsisV />
-                      </Button>
+                      <div className="d-flex gap-2 align-items-center">
+                        <Button 
+                          variant="link" 
+                          size="sm" 
+                          className="text-primary p-0" 
+                          onClick={() => handleEditClick(alert)}
+                          title="Edit"
+                        >
+                          <FaEdit size={16} />
+                        </Button>
+                        <Button 
+                          variant="link" 
+                          size="sm" 
+                          className="text-danger p-0" 
+                          onClick={() => handleDeleteClick(alert)}
+                          title="Delete"
+                        >
+                          <FaTrash size={16} />
+                        </Button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -485,13 +673,50 @@ const AlertManagement = () => {
         </Col>
       </Row>
 
-      {/* New Alert Modal */}
+      {/* New/Edit Alert Modal */}
       <NewAlertModal 
         show={showNewAlertModal} 
-        handleClose={() => setShowNewAlertModal(false)}
+        handleClose={handleModalClose}
         onAlertCreated={handleAlertCreated}
+        editAlert={editingAlert}
       />
-    </Container>
+
+      {/* Delete Confirmation Modal */}
+      <Modal show={showDeleteModal} onHide={() => setShowDeleteModal(false)} centered>
+        <Modal.Header closeButton>
+          <Modal.Title>Confirm Delete</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <p>Are you sure you want to delete this alert?</p>
+          {alertToDelete && (
+            <div className="bg-light p-3 rounded">
+              <p className="mb-1"><strong>Alert ID:</strong> {alertToDelete.id}</p>
+              <p className="mb-1"><strong>Bin ID:</strong> {alertToDelete.binId}</p>
+              <p className="mb-0"><strong>Location:</strong> {alertToDelete.location}</p>
+            </div>
+          )}
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowDeleteModal(false)} disabled={deleteLoading}>
+            Cancel
+          </Button>
+          <Button variant="danger" onClick={handleDeleteConfirm} disabled={deleteLoading}>
+            {deleteLoading ? (
+              <>
+                <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                Deleting...
+              </>
+            ) : (
+              <>
+                <FaTrash className="me-2" />
+                Delete
+              </>
+            )}
+          </Button>
+        </Modal.Footer>
+      </Modal>
+      </Container>
+    </>
   );
 };
 
