@@ -92,6 +92,11 @@ const SideNavigation = () => {
                 <span>Reports</span>
               </Link>
             </li>
+            <li className="nav-item">
+              <Link to="/reports" className="nav-link">
+                <span>Payments</span>
+              </Link>
+            </li>
             <hr></hr>
             <li className="nav-item">
               <Link to="/reports" className="nav-link">
