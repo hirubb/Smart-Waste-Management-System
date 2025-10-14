@@ -23,7 +23,7 @@ const SideNavigation = () => {
         return (
           <>
             <li className="nav-item">
-              <Link to="/admin/dashboard" className="nav-link">
+              <Link to="/admin-dashboard" className="nav-link">
                 <span>Admin Dashboard</span>
               </Link>
             </li>
@@ -38,7 +38,7 @@ const SideNavigation = () => {
               </Link>
             </li>
             <li className="nav-item">
-              <Link to="/manage-users" className="nav-link">
+              <Link to="/assign-collectors" className="nav-link">
                 <span>Assign Collectors</span>
               </Link>
             </li>
@@ -49,7 +49,7 @@ const SideNavigation = () => {
             </li>
             <hr></hr>
             <li className="nav-item">
-              <Link to="/settings" className="nav-link">
+              <Link to="/manager/profile" className="nav-link">
                 <span>Manager Profile</span>
               </Link>
             </li>

@@ -1,10 +1,13 @@
 const express = require('express');
 const router = express.Router();
-const { register, login, me } = require('../controllers/authController');
+const { register, login, me ,getAllCollectors} = require('../controllers/authController');
 const auth = require('../middleware/auth');
 
 router.post('/register', register);
 router.post('/login', login);
 router.get('/me', auth(), me);
+
+// Get all collectors
+router.get("/collectors", getAllCollectors);
 
 module.exports = router;

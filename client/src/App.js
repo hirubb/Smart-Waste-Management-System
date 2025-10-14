@@ -11,6 +11,9 @@ import SideNavigation from './components/SideNavigation';
 import SpecialWasteCollection from './pages/SpecialWasteCollection';
 import CollectionSummary from './pages/CollectionSummary';
 import UserCollections from './pages/UserCollections';
+import ManagerProfile from './pages/ManagerProfile';
+import AssignCollectors from './pages/AssignCollectors';
+import AdminDashboard from './pages/AdminDashboard';
 import PaymentHistory from './pages/PaymentHistory';
 import PaymentMethods from './pages/PaymentMethods';
 import AlertManagement from './pages/AlertManagement';
@@ -45,6 +48,7 @@ function App() {
         <Route path="/special" element={<SpecialWasteCollection />} />
         <Route path="/collection-summary" element={<CollectionSummary />} />
         <Route path="/collection-history" element={<UserCollections />} />
+        
         <Route path="/user-collections" element={<UserCollections />} />
         <Route path="/payment-history" element={<PaymentHistory />} />
         <Route path="/payment-methods" element={<PaymentMethods />} />
@@ -53,14 +57,10 @@ function App() {
         <Route path="/admin-routes" element={<AdminRoutes />} />
 
         {/* Protected routes */}
-        <Route
-          path="/dashboard"
-          element={
-            <ProtectedRoute>
-              <Dashboard />
-            </ProtectedRoute>
-          }
-        />
+        <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+        <Route path="/manager/profile" element={<ProtectedRoute><ManagerProfile /></ProtectedRoute>} />
+        <Route path="/assign-collectors" element={<ProtectedRoute><AssignCollectors /></ProtectedRoute>} />
+        <Route path="/admin-dashboard" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
 
         {/* Redirect unknown paths */}
         <Route path="*" element={<Navigate to="/login" replace />} />

@@ -163,3 +163,33 @@ exports.me = async (req, res) => {
     });
   }
 };
+
+// Get all collectors
+exports.getAllCollectors = async (req, res) => {
+  try {
+    // Find all users with role "collector" and active status
+    const collectors = await User.find({ role: "collector", accountStatus: "active" })
+      .select("-password") // exclude password field for security
+      .sort({ createdAt: -1 }); // newest first
+
+    if (!collectors.length) {
+      return res.status(404).json({
+        success: false,
+        message: "No collectors found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Collectors retrieved successfully",
+      collectors,
+    });
+  } catch (error) {
+    console.error("Error fetching collectors:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error while fetching collectors",
+      error: error.message,
+    });
+  }
+};
