@@ -1,9 +1,28 @@
 import React, { useContext } from "react";
+import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import Colors from "../constants/colors";
 
 const Dashboard = () => {
   const { user, logout } = useContext(AuthContext);
+  const navigate = useNavigate();
+
+  // Feature click handlers
+  const handleFeatureClick = (feature) => {
+    if (feature === "View bin alerts") {
+      navigate("/alert-management");
+    } else if (feature === "Schedule special collection") {
+      navigate("/special");
+    } else if (feature === "View assigned routes") {
+      // Navigate to different routes page based on role
+      if (user?.role === "collector") {
+        navigate("/assigned-routes");
+      } else if (user?.role === "wma_admin" || user?.role === "authority") {
+        navigate("/admin-routes");
+      }
+    }
+    // Add more navigation handlers as needed
+  };
 
   // Features per role
   const roleFeatures = {
@@ -23,6 +42,13 @@ const Dashboard = () => {
       "Access route history",
     ],
     wma_admin: [
+      "View assigned routes",
+      "Optimize collection routes",
+      "View reports and analytics",
+      "Manage users and collectors",
+    ],
+    authority: [
+      "View assigned routes",
       "Optimize collection routes",
       "View reports and analytics",
       "Manage users and collectors",
@@ -81,10 +107,12 @@ const Dashboard = () => {
               boxShadow: "0 6px 20px rgba(0,0,0,0.1)",
               textAlign: "center",
               transition: "transform 0.2s",
+              cursor: "pointer",
             }}
             className="feature-card"
             onMouseEnter={(e) => (e.currentTarget.style.transform = "translateY(-5px)")}
             onMouseLeave={(e) => (e.currentTarget.style.transform = "translateY(0)")}
+            onClick={() => handleFeatureClick(feature)}
           >
             <h3 style={{ color: Colors.textPrimary, marginBottom: "0.5rem" }}>{feature}</h3>
           </div>

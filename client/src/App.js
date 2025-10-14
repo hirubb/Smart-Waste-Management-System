@@ -1,5 +1,5 @@
 import React from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import Register from './pages/Register';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
@@ -14,16 +14,28 @@ import UserCollections from './pages/UserCollections';
 import ManagerProfile from './pages/ManagerProfile';
 import AssignCollectors from './pages/AssignCollectors';
 import AdminDashboard from './pages/AdminDashboard';
+import PaymentHistory from './pages/PaymentHistory';
+import PaymentMethods from './pages/PaymentMethods';
+import AlertManagement from './pages/AlertManagement';
+import AssignedRoutes from './pages/AssignedRoutes';
+import AdminRoutes from './pages/AdminRoutes';
 
 function App() {
+  const location = useLocation();
+  const isAlertManagementPage = location.pathname === '/alert-management';
+  const isAssignedRoutesPage = location.pathname === '/assigned-routes';
+  const isAdminRoutesPage = location.pathname === '/admin-routes';
+  const hideHeader = isAlertManagementPage || isAssignedRoutesPage || isAdminRoutesPage;
+
   return (
     <div style={{ display: 'flex', minHeight: '100vh' }}>
-      {/* Header appears on all pages */}
+      {/* Side Navigation appears on all pages */}
       
       <SideNavigation />
 
       <main className="main-content-area">
-        <Header />
+        {/* Header appears on all pages except Alert Management and Assigned Routes */}
+        {!hideHeader && <Header />}
 
       
 
@@ -37,6 +49,12 @@ function App() {
         <Route path="/collection-summary" element={<CollectionSummary />} />
         <Route path="/collection-history" element={<UserCollections />} />
         
+        <Route path="/user-collections" element={<UserCollections />} />
+        <Route path="/payment-history" element={<PaymentHistory />} />
+        <Route path="/payment-methods" element={<PaymentMethods />} />
+        <Route path="/alert-management" element={<AlertManagement />} />
+        <Route path="/assigned-routes" element={<AssignedRoutes />} />
+        <Route path="/admin-routes" element={<AdminRoutes />} />
 
         {/* Protected routes */}
         <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
@@ -48,7 +66,7 @@ function App() {
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
 
-      <Footer/>
+      {!hideHeader && <Footer/>}
       </main>
     </div>
   );
