@@ -13,6 +13,13 @@ const Dashboard = () => {
       navigate("/alert-management");
     } else if (feature === "Schedule special collection") {
       navigate("/special");
+    } else if (feature === "View assigned routes") {
+      // Navigate to different routes page based on role
+      if (user?.role === "collector") {
+        navigate("/assigned-routes");
+      } else if (user?.role === "wma_admin" || user?.role === "authority") {
+        navigate("/admin-routes");
+      }
     }
     // Add more navigation handlers as needed
   };
@@ -35,6 +42,13 @@ const Dashboard = () => {
       "Access route history",
     ],
     wma_admin: [
+      "View assigned routes",
+      "Optimize collection routes",
+      "View reports and analytics",
+      "Manage users and collectors",
+    ],
+    authority: [
+      "View assigned routes",
       "Optimize collection routes",
       "View reports and analytics",
       "Manage users and collectors",

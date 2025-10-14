@@ -14,10 +14,15 @@ import UserCollections from './pages/UserCollections';
 import PaymentHistory from './pages/PaymentHistory';
 import PaymentMethods from './pages/PaymentMethods';
 import AlertManagement from './pages/AlertManagement';
+import AssignedRoutes from './pages/AssignedRoutes';
+import AdminRoutes from './pages/AdminRoutes';
 
 function App() {
   const location = useLocation();
   const isAlertManagementPage = location.pathname === '/alert-management';
+  const isAssignedRoutesPage = location.pathname === '/assigned-routes';
+  const isAdminRoutesPage = location.pathname === '/admin-routes';
+  const hideHeader = isAlertManagementPage || isAssignedRoutesPage || isAdminRoutesPage;
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh' }}>
@@ -26,8 +31,8 @@ function App() {
       <SideNavigation />
 
       <main className="main-content-area">
-        {/* Header appears on all pages except Alert Management */}
-        {!isAlertManagementPage && <Header />}
+        {/* Header appears on all pages except Alert Management and Assigned Routes */}
+        {!hideHeader && <Header />}
 
       
 
@@ -44,6 +49,8 @@ function App() {
         <Route path="/payment-history" element={<PaymentHistory />} />
         <Route path="/payment-methods" element={<PaymentMethods />} />
         <Route path="/alert-management" element={<AlertManagement />} />
+        <Route path="/assigned-routes" element={<AssignedRoutes />} />
+        <Route path="/admin-routes" element={<AdminRoutes />} />
 
         {/* Protected routes */}
         <Route
@@ -59,7 +66,7 @@ function App() {
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
 
-      {!isAlertManagementPage && <Footer/>}
+      {!hideHeader && <Footer/>}
       </main>
     </div>
   );
