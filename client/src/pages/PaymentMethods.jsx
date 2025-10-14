@@ -176,6 +176,18 @@ const PaymentMethods = () => {
     setTimeout(() => setSuccess(""), 3000);
   };
 
+  const formatCardNumber = (value) => {
+    // Remove all non-digits
+    const digits = value.replace(/\D/g, '');
+    // Add spaces every 4 digits
+    return digits.replace(/(\d{4})(?=\d)/g, '$1 ').substring(0, 19);
+  };
+
+  const handleCardNumberChange = (e) => {
+    const formatted = formatCardNumber(e.target.value);
+    setCardData({ ...cardData, cardNumber: formatted });
+  };
+
   const resetForm = () => {
     setCardData({
       cardNumber: "",
@@ -250,9 +262,15 @@ const PaymentMethods = () => {
                 type="text"
                 placeholder="1234 5678 9012 3456"
                 value={cardData.cardNumber}
-                onChange={(e) => setCardData({ ...cardData, cardNumber: e.target.value })}
+                onChange={handleCardNumberChange}
                 maxLength="19"
+                isInvalid={cardData.cardNumber && cardData.cardNumber.replace(/\s/g, '').length !== 16}
               />
+              {cardData.cardNumber && cardData.cardNumber.replace(/\s/g, '').length !== 16 && (
+                <Form.Control.Feedback type="invalid">
+                  Must be 16 digits
+                </Form.Control.Feedback>
+              )}
             </Form.Group>
 
             <Form.Group className="mb-3">
