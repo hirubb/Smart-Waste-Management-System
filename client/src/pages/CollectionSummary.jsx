@@ -1,12 +1,14 @@
-import React from "react";
+import React, { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Container, Card, Button, Table, Alert } from "react-bootstrap";
 import api from "../services/api";
+import PaymentModal from "../components/PaymentModal";
 
 const CollectionSummary = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { request, formData, estimatedCost } = location.state || {};
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
 
   if (!request) {
     return (
@@ -21,18 +23,23 @@ const CollectionSummary = () => {
     );
   }
 
-  const handleConfirmBooking = async () => {
-    try {
-      const response = await api.patch(`/collections/${request._id}/status`, {
-        status: "confirmed",
-      });
+  const handleConfirmBooking = () => {
+    // Open payment modal instead of directly confirming
+    setShowPaymentModal(true);
+  };
 
-      alert("✅ Booking confirmed successfully!");
-      navigate("/home");
-    } catch (error) {
-      console.error("Error confirming booking:", error);
-      alert("❌ Failed to confirm booking. Please try again.");
-    }
+  const handlePaymentSuccess = (paymentData) => {
+    setShowPaymentModal(false);
+    
+    // Show success message
+    alert(`✅ Payment Successful!\nTransaction ID: ${paymentData.transactionId || 'Pending'}\nYour booking has been confirmed!`);
+    
+    // Navigate to home or user collections page
+    navigate("/user-collections");
+  };
+
+  const handleClosePaymentModal = () => {
+    setShowPaymentModal(false);
   };
 
   return (
@@ -91,11 +98,20 @@ const CollectionSummary = () => {
               Back to Edit
             </Button>
             <Button variant="success" onClick={handleConfirmBooking}>
-              Confirm Booking
+              Proceed to Payment
             </Button>
           </div>
         </Card.Body>
       </Card>
+
+      {/* Payment Modal */}
+      <PaymentModal
+        show={showPaymentModal}
+        handleClose={handleClosePaymentModal}
+        amount={estimatedCost}
+        collectionRequestId={request._id}
+        onPaymentSuccess={handlePaymentSuccess}
+      />
     </Container>
   );
 };
