@@ -11,6 +11,8 @@ import SideNavigation from './components/SideNavigation';
 import SpecialWasteCollection from './pages/SpecialWasteCollection';
 import CollectionSummary from './pages/CollectionSummary';
 import UserCollections from './pages/UserCollections';
+import ManagerProfile from './pages/ManagerProfile';
+import AssignCollectors from './pages/AssignCollectors';
 
 function App() {
   return (
@@ -33,16 +35,12 @@ function App() {
         <Route path="/special" element={<SpecialWasteCollection />} />
         <Route path="/collection-summary" element={<CollectionSummary />} />
         <Route path="/collection-history" element={<UserCollections />} />
+        
 
         {/* Protected routes */}
-        <Route
-          path="/dashboard"
-          element={
-            <ProtectedRoute>
-              <Dashboard />
-            </ProtectedRoute>
-          }
-        />
+        <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+        <Route path="/manager/profile" element={<ProtectedRoute><ManagerProfile /></ProtectedRoute>} />
+         <Route path="/assign-collectors" element={<ProtectedRoute><AssignCollectors /></ProtectedRoute>} />
 
         {/* Redirect unknown paths */}
         <Route path="*" element={<Navigate to="/login" replace />} />
