@@ -246,7 +246,6 @@ const SideNavigation = () => {
       </div>
 
       <ul className="nav-list">{renderMenuByRole()}</ul>
-
     </div>
   );
 };
