@@ -12,6 +12,7 @@ import SpecialWasteCollection from './pages/SpecialWasteCollection';
 import CollectionSummary from './pages/CollectionSummary';
 import UserCollections from './pages/UserCollections';
 import PaymentHistory from './pages/PaymentHistory';
+import PaymentMethods from './pages/PaymentMethods';
 
 function App() {
   return (
@@ -36,6 +37,7 @@ function App() {
         <Route path="/collection-history" element={<UserCollections />} />
         <Route path="/user-collections" element={<UserCollections />} />
         <Route path="/payment-history" element={<PaymentHistory />} />
+        <Route path="/payment-methods" element={<PaymentMethods />} />
 
         {/* Protected routes */}
         <Route
