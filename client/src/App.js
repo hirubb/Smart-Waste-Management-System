@@ -11,6 +11,7 @@ import SideNavigation from './components/SideNavigation';
 import SpecialWasteCollection from './pages/SpecialWasteCollection';
 import CollectionSummary from './pages/CollectionSummary';
 import UserCollections from './pages/UserCollections';
+import PaymentHistory from './pages/PaymentHistory';
 
 function App() {
   return (
@@ -33,6 +34,8 @@ function App() {
         <Route path="/special" element={<SpecialWasteCollection />} />
         <Route path="/collection-summary" element={<CollectionSummary />} />
         <Route path="/collection-history" element={<UserCollections />} />
+        <Route path="/user-collections" element={<UserCollections />} />
+        <Route path="/payment-history" element={<PaymentHistory />} />
 
         {/* Protected routes */}
         <Route
