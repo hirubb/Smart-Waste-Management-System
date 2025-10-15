@@ -20,13 +20,16 @@ import AlertManagement from './pages/AlertManagement';
 import AssignedRoutes from './pages/AssignedRoutes';
 import AdminRoutes from './pages/AdminRoutes';
 import Profile from './pages/Profile';
+import SensorUI from './pages/SensorUI';
+import LiveMonitor from './pages/LiveMonitor';
 
 function App() {
   const location = useLocation();
   const isAlertManagementPage = location.pathname === '/alert-management';
   const isAssignedRoutesPage = location.pathname === '/assigned-routes';
   const isAdminRoutesPage = location.pathname === '/admin-routes';
-  const hideHeader = isAlertManagementPage || isAssignedRoutesPage || isAdminRoutesPage;
+  const isLiveMonitorPage = location.pathname === '/live-monitor';
+  const hideHeader = isAlertManagementPage || isAssignedRoutesPage || isAdminRoutesPage || isLiveMonitorPage;
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh' }}>
@@ -57,6 +60,8 @@ function App() {
         <Route path="/assigned-routes" element={<AssignedRoutes />} />
         <Route path="/admin-routes" element={<AdminRoutes />} />
         <Route path="/profile" element={<Profile />} />
+        <Route path="/sensorUI" element={<SensorUI />} />
+        <Route path="/live-monitor" element={<LiveMonitor />} />
 
         {/* Protected routes */}
         <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
