@@ -12,8 +12,10 @@
  */
 
 import React, { useContext } from "react";
+import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import Colors from "../constants/colors";
+import { FileText, BarChart3, Users, Map } from "lucide-react";
 
 /**
  * WasteManagerDashboard - Main dashboard for waste manager
@@ -22,6 +24,47 @@ import Colors from "../constants/colors";
 const WasteManagerDashboard = () => {
   // Destructure user from AuthContext following Dependency Inversion Principle
   const { user } = useContext(AuthContext);
+  const navigate = useNavigate();
+
+  /**
+   * Navigation handler for features
+   * Follows Single Responsibility Principle
+   */
+  const handleNavigate = (path) => {
+    navigate(path);
+  };
+
+  // Available features for waste manager
+  const features = [
+    {
+      title: "Monthly Reports",
+      description: "Generate and view comprehensive waste collection reports",
+      icon: <FileText size={40} />,
+      path: "/monthly-reports",
+      color: "#667eea"
+    },
+    {
+      title: "Collection Analytics",
+      description: "View waste collection trends and statistics",
+      icon: <BarChart3 size={40} />,
+      path: "/collection-summary",
+      color: "#764ba2"
+    },
+    {
+      title: "Collector Management",
+      description: "Manage and monitor waste collectors",
+      icon: <Users size={40} />,
+      path: "/assign-collectors",
+      color: "#17a2b8"
+    },
+    {
+      title: "Route Optimization",
+      description: "View and optimize collection routes",
+      icon: <Map size={40} />,
+      path: "/admin-routes",
+      color: "#28a745"
+    }
+  ];
 
   return (
     <div 
@@ -145,12 +188,64 @@ const WasteManagerDashboard = () => {
       <section
         style={{
           marginTop: "3rem",
-          textAlign: "center",
-          color: Colors.textSecondary,
-          fontSize: "0.95rem",
         }}
       >
-        <p>Additional features coming soon...</p>
+        <h3 style={{ color: Colors.textPrimary, marginBottom: "1.5rem", textAlign: "center" }}>
+          Management Tools
+        </h3>
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))",
+            gap: "1.5rem",
+            maxWidth: "1200px",
+            margin: "0 auto"
+          }}
+        >
+          {features.map((feature, index) => (
+            <div
+              key={index}
+              onClick={() => handleNavigate(feature.path)}
+              style={{
+                backgroundColor: Colors.card,
+                padding: "2rem",
+                borderRadius: "16px",
+                boxShadow: "0 6px 20px rgba(0,0,0,0.1)",
+                cursor: "pointer",
+                transition: "transform 0.3s, box-shadow 0.3s",
+                textAlign: "center",
+                borderTop: `4px solid ${feature.color}`
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = "translateY(-5px)";
+                e.currentTarget.style.boxShadow = "0 12px 28px rgba(0,0,0,0.15)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = "translateY(0)";
+                e.currentTarget.style.boxShadow = "0 6px 20px rgba(0,0,0,0.1)";
+              }}
+            >
+              <div
+                style={{
+                  display: "inline-flex",
+                  padding: "1rem",
+                  borderRadius: "50%",
+                  backgroundColor: feature.color + "20",
+                  color: feature.color,
+                  marginBottom: "1rem"
+                }}
+              >
+                {feature.icon}
+              </div>
+              <h4 style={{ color: Colors.textPrimary, marginBottom: "0.5rem", fontSize: "1.2rem" }}>
+                {feature.title}
+              </h4>
+              <p style={{ color: Colors.textSecondary, fontSize: "0.95rem", lineHeight: "1.5" }}>
+                {feature.description}
+              </p>
+            </div>
+          ))}
+        </div>
       </section>
     </div>
   );

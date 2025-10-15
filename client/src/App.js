@@ -34,6 +34,7 @@ import AlertManagement from './pages/AlertManagement';
 import AssignedRoutes from './pages/AssignedRoutes';
 import AdminRoutes from './pages/AdminRoutes';
 import WasteManagerDashboard from './pages/WasteManagerDashboard';
+import MonthlyReports from './pages/MonthlyReports';
 
 /**
  * Main App Component
@@ -113,6 +114,16 @@ function App() {
             element={
               <ProtectedRoute>
                 <WasteManagerDashboard />
+              </ProtectedRoute>
+            } 
+          />
+
+          {/* Monthly Reports - Protected route */}
+          <Route 
+            path="/monthly-reports" 
+            element={
+              <ProtectedRoute>
+                <MonthlyReports />
               </ProtectedRoute>
             } 
           />

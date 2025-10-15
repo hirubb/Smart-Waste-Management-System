@@ -9,7 +9,7 @@ const reportSchema = new mongoose.Schema({
   generatedBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
-    required: true
+    required: false
   },
   period: {
     startDate: Date,

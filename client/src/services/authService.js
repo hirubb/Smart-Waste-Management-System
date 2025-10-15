@@ -42,25 +42,35 @@ export const isWasteManagerCredentials = (username, password) => {
 };
 
 /**
- * Creates a mock authentication response for waste manager
- * Follows Interface Segregation Principle: Returns only necessary data
+ * Creates authentication response for waste manager by calling backend
+ * Now properly generates a JWT token from the backend
  * 
- * @returns {Object} - Mock auth response with token and user data
+ * @returns {Promise<Object>} - Auth response with real JWT token and user data
  */
-export const createWasteManagerAuthResponse = () => {
-  // Generate a mock token (in production, this would come from backend)
-  const mockToken = `waste_manager_token_${Date.now()}`;
-
-  return {
-    success: true,
-    token: mockToken,
-    user: {
-      id: "waste_manager_001",
-      name: HARDCODED_CREDENTIALS.WASTE_MANAGER.name,
-      email: "wastemanager@system.local",
-      role: HARDCODED_CREDENTIALS.WASTE_MANAGER.role,
-    },
-  };
+export const createWasteManagerAuthResponse = async () => {
+  try {
+    // Call backend to get a real JWT token for waste manager
+    const response = await API.post("/auth/login", {
+      email: HARDCODED_CREDENTIALS.WASTE_MANAGER.username,
+      password: HARDCODED_CREDENTIALS.WASTE_MANAGER.password,
+      isWasteManager: true // Flag to indicate this is the waste manager
+    });
+    
+    return {
+      success: true,
+      token: response.data.token,
+      user: response.data.user || {
+        id: "waste_manager_001",
+        name: HARDCODED_CREDENTIALS.WASTE_MANAGER.name,
+        email: "wastemanager@system.local",
+        role: HARDCODED_CREDENTIALS.WASTE_MANAGER.role,
+      },
+    };
+  } catch (error) {
+    // If backend call fails, throw error
+    console.error("Failed to authenticate waste manager with backend:", error);
+    throw new Error("Failed to authenticate waste manager. Please try again.");
+  }
 };
 
 /**
@@ -75,7 +85,13 @@ export const createWasteManagerAuthResponse = () => {
 export const authenticateWithBackend = async (email, password) => {
   try {
     const response = await API.post("/auth/login", { email, password });
-    return response;
+    
+    // Return the data directly, not the whole response
+    return {
+      success: true,
+      token: response.data.token,
+      user: response.data.user
+    };
   } catch (error) {
     throw error;
   }
@@ -93,8 +109,8 @@ export const authenticateWithBackend = async (email, password) => {
 export const login = async (identifier, password) => {
   // Check if credentials match waste manager
   if (isWasteManagerCredentials(identifier, password)) {
-    // Return immediate success for hardcoded waste manager
-    return createWasteManagerAuthResponse();
+    // Get real JWT token from backend for waste manager
+    return await createWasteManagerAuthResponse();
   }
 
   // Otherwise, authenticate with backend
