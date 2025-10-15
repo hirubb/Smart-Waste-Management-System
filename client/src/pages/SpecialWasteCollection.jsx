@@ -258,6 +258,7 @@ const SpecialWasteCollection = () => {
         weight: formData.weight ? parseFloat(formData.weight) : undefined,
         estimatedCost: estimatedCost,
       };
+      
 
       const res = await api.post("/collections/schedule", requestData);
 

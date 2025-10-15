@@ -84,6 +84,22 @@ exports.getUserCollections = async (req, res) => {
   }
 };
 
+exports.getAllCollections = async (req, res) => {
+  try {
+    // Fetch all collection requests, sorted by most recent first
+    const requests = await CollectionRequest.find()
+      .populate("userId", "name email") // optional: populate user details if referenced
+      .sort({ createdAt: -1 });
+
+    res.status(200).json(requests);
+  } catch (error) {
+    res.status(500).json({
+      message: "Error fetching all collection requests",
+      error: error.message,
+    });
+  }
+};
+
 /**
  * Cancel a collection request
  */
@@ -180,3 +196,54 @@ exports.updateCollectionStatus = async (req, res) => {
     });
   }
 };
+
+/**
+ * Assign a collector to a collection request
+ */
+exports.assignCollector = async (req, res) => {
+  try {
+    const { collectionId } = req.params; // collection request ID
+    const { collectorId } = req.body; // user ID of the collector
+
+    console.log("collectionId : ",collectionId)
+    console.log("collectorId : ",collectorId)
+    
+    if (!collectorId) {
+      return res.status(400).json({ message: "Collector ID is required." });
+    }
+
+    // Find the collection request
+    const request = await CollectionRequest.findById(collectionId);
+    if (!request) {
+      return res.status(404).json({ message: "Collection request not found." });
+    }
+
+    // Optionally, you could check if the collector exists
+    const collector = await User.findById(collectorId);
+    if (!collector) {
+      return res.status(404).json({ message: "Collector not found." });
+    }
+
+    // Assign the collector
+    request.assignedCollector = collectorId;
+
+    // Optionally, you could update status to "assigned" if not already
+    if (request.status === "pending" || request.status === "confirmed") {
+      request.status = "assigned";
+    }
+
+    await request.save();
+
+    res.json({
+      message: `Collector ${collector.name || collectorId} assigned successfully.`,
+      request,
+    });
+  } catch (error) {
+    console.error("Error assigning collector:", error);
+    res.status(500).json({
+      message: "Server error while assigning collector.",
+      error: error.message,
+    });
+  }
+};
+

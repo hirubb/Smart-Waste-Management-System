@@ -5,7 +5,9 @@ const {
   getUserCollections,
   cancelCollection,
   confirmCollection,
-  updateCollectionStatus
+  updateCollectionStatus,
+  getAllCollections,
+  assignCollector
 } = require("../controllers/collectionRequestController");
 
 // POST - schedule new collection
@@ -22,4 +24,11 @@ router.put("/confirm/:id", confirmCollection);
 
 //change status
 router.patch("/:id/status",updateCollectionStatus);
+
+// Get all collections (for manager)
+router.get("/", getAllCollections);
+
+// PATCH - assign a collector
+router.patch("/:collectionId/assign-collector", assignCollector);
+
 module.exports = router;
