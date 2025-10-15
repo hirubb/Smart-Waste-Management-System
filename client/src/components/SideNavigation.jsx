@@ -62,7 +62,7 @@ const SideNavigation = () => {
             </li>
             <hr></hr>
             <li className="nav-item">
-              <Link to="/manager/profile" className="nav-link">
+              <Link to="/profile" className="nav-link">
                 <span>Manager Profile</span>
               </Link>
             </li>
@@ -170,12 +170,12 @@ const SideNavigation = () => {
             </li>
             <hr></hr>
             <li className="nav-item">
-              <Link to="/reports" className="nav-link">
+              <Link to="/profile" className="nav-link">
                 <span>Collector Profile</span>
               </Link>
             </li>
             <li className="nav-item">
-              <Link to="/reports" className="nav-link">
+              <Link to="/settings" className="nav-link">
                 <span>Settings</span>
               </Link>
             </li>
@@ -273,10 +273,10 @@ const SideNavigation = () => {
               {openDropdown === "settings" && (
                 <ul className="dropdown-menu">
                   <li>
-                    <Link to="#">Profile</Link>
+                    <Link to="/profile">Profile</Link>
                   </li>
                   <li>
-                    <Link to="#">Account</Link>
+                    <Link to="/account">Account</Link>
                   </li>
                 </ul>
               )}
