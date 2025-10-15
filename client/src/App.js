@@ -1,3 +1,5 @@
+
+
 /**
  * Main Application Component
  * 
@@ -82,6 +84,9 @@ function App() {
           <Route path="/alert-management" element={<AlertManagement />} />
           <Route path="/assigned-routes" element={<AssignedRoutes />} />
           <Route path="/admin-routes" element={<AdminRoutes />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/sensorUI" element={<SensorUI />} />
+          <Route path="/live-monitor" element={<LiveMonitor />} />
 
           {/* Protected routes - Require authentication */}
           <Route 
@@ -137,27 +142,6 @@ function App() {
             } 
           />
 
-
-      {/* Page content */}
-      <Routes>
-        {/* Public routes */}
-        <Route path="/register" element={<Register />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/home" element={<HomePage />} />
-        <Route path="/special" element={<SpecialWasteCollection />} />
-        <Route path="/collection-summary" element={<CollectionSummary />} />
-        <Route path="/collection-history" element={<UserCollections />} />
-        
-        <Route path="/user-collections" element={<UserCollections />} />
-        <Route path="/payment-history" element={<PaymentHistory />} />
-        <Route path="/payment-methods" element={<PaymentMethods />} />
-        <Route path="/alert-management" element={<AlertManagement />} />
-        <Route path="/assigned-routes" element={<AssignedRoutes />} />
-        <Route path="/admin-routes" element={<AdminRoutes />} />
-        <Route path="/profile" element={<Profile />} />
-        <Route path="/sensorUI" element={<SensorUI />} />
-        <Route path="/live-monitor" element={<LiveMonitor />} />
-
           {/* Custom Reports - Protected route */}
           <Route 
             path="/custom-reports" 
@@ -167,7 +151,6 @@ function App() {
               </ProtectedRoute>
             } 
           />
-
 
           {/* Report History - Protected route */}
           <Route 

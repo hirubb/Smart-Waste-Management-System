@@ -14,6 +14,7 @@ const SideNavigation = () => {
   }, [user]);
 
   const toggleDropdown = (menuName) => {
+    console.log('Toggling dropdown:', menuName, 'Current open:', openDropdown);
     setOpenDropdown(openDropdown === menuName ? null : menuName);
   };
 
@@ -42,7 +43,7 @@ const SideNavigation = () => {
                 <span>Assign Collectors</span>
               </Link>
             </li>
-            <li className="nav-item has-dropdown">
+            <li className={`nav-item has-dropdown ${openDropdown === "reports" ? "active" : ""}`}>
               <div
                 className="nav-link"
                 onClick={() => toggleDropdown("reports")}
@@ -82,7 +83,7 @@ const SideNavigation = () => {
                 <span>Dashboard</span>
               </Link>
             </li>
-            <li className="nav-item has-dropdown">
+            <li className={`nav-item has-dropdown ${openDropdown === "reports" ? "active" : ""}`}>
               <div
                 className="nav-link"
                 onClick={() => toggleDropdown("reports")}
@@ -140,7 +141,7 @@ const SideNavigation = () => {
                 <span>Dashboard</span>
               </Link>
             </li>
-            <li className="nav-item has-dropdown">
+            <li className={`nav-item has-dropdown ${openDropdown === "collections" ? "active" : ""}`}>
               <div
                 className="nav-link"
                 onClick={() => toggleDropdown("collections")}
@@ -196,7 +197,7 @@ const SideNavigation = () => {
             </li>
 
             {/* Collections with Dropdown */}
-            <li className="nav-item has-dropdown">
+            <li className={`nav-item has-dropdown ${openDropdown === "collections" ? "active" : ""}`}>
               <div
                 className="nav-link"
                 onClick={() => toggleDropdown("collections")}
@@ -216,7 +217,7 @@ const SideNavigation = () => {
             </li>
 
             {/* Waste Types with Dropdown */}
-            <li className="nav-item has-dropdown">
+            <li className={`nav-item has-dropdown ${openDropdown === "wasteTypes" ? "active" : ""}`}>
               <div
                 className="nav-link"
                 onClick={() => toggleDropdown("wasteTypes")}
@@ -236,14 +237,20 @@ const SideNavigation = () => {
             </li>
 
             {/* Payment with Dropdown */}
-            <li className="nav-item has-dropdown">
+            <li className={`nav-item has-dropdown ${openDropdown === "payment" ? "active" : ""}`}>
               <div
                 className="nav-link"
-                onClick={() => toggleDropdown("payment")}
+                onClick={() => {
+                  console.log('Payment clicked, current openDropdown:', openDropdown);
+                  toggleDropdown("payment");
+                }}
               >
                 <span>Payment</span>
               </div>
-              {openDropdown === "payment" && (
+              {(() => {
+                console.log('Checking payment dropdown - openDropdown value:', openDropdown);
+                return openDropdown === "payment";
+              })() && (
                 <ul className="dropdown-menu">
                   <li>
                     <Link to="/payment-history">Payment History</Link>
@@ -263,7 +270,7 @@ const SideNavigation = () => {
             </li>
 
             {/* Settings with Dropdown */}
-            <li className="nav-item has-dropdown">
+            <li className={`nav-item has-dropdown ${openDropdown === "settings" ? "active" : ""}`}>
               <div
                 className="nav-link"
                 onClick={() => toggleDropdown("settings")}
@@ -283,7 +290,7 @@ const SideNavigation = () => {
             </li>
 
             {/* Support with Dropdown */}
-            <li className="nav-item has-dropdown">
+            <li className={`nav-item has-dropdown ${openDropdown === "support" ? "active" : ""}`}>
               <div
                 className="nav-link"
                 onClick={() => toggleDropdown("support")}
