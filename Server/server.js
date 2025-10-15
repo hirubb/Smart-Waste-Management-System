@@ -65,7 +65,7 @@ app.use("/api/alerts", alertRoutes);
 app.use("/api/dustbins", dustbinRoutes);
 app.use("/api/notifications", notificationRoutes);
 
-// app.use("/api/reports", reportRoutes);
+app.use("/api/reports", reportRoutes);
 
 
 

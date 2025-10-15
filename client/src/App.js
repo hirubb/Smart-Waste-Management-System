@@ -35,11 +35,9 @@ import PaymentMethods from './pages/PaymentMethods';
 import AlertManagement from './pages/AlertManagement';
 import AssignedRoutes from './pages/AssignedRoutes';
 import AdminRoutes from './pages/AdminRoutes';
-
 import Profile from './pages/Profile';
 import SensorUI from './pages/SensorUI';
 import LiveMonitor from './pages/LiveMonitor';
-
 import WasteManagerDashboard from './pages/WasteManagerDashboard';
 import MonthlyReports from './pages/MonthlyReports';
 import CustomReports from './pages/CustomReports';
