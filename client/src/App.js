@@ -19,6 +19,7 @@ import PaymentMethods from './pages/PaymentMethods';
 import AlertManagement from './pages/AlertManagement';
 import AssignedRoutes from './pages/AssignedRoutes';
 import AdminRoutes from './pages/AdminRoutes';
+import Profile from './pages/Profile';
 
 function App() {
   const location = useLocation();
@@ -55,6 +56,7 @@ function App() {
         <Route path="/alert-management" element={<AlertManagement />} />
         <Route path="/assigned-routes" element={<AssignedRoutes />} />
         <Route path="/admin-routes" element={<AdminRoutes />} />
+        <Route path="/profile" element={<Profile />} />
 
         {/* Protected routes */}
         <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
