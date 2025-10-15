@@ -56,42 +56,10 @@ const AlertManagement = () => {
   const [showNotifications, setShowNotifications] = useState(false);
   const [notifications, setNotifications] = useState([]);
 
-  // Fetch alerts and notifications from API
+  // Fetch alerts from API
   useEffect(() => {
     fetchAlerts();
-    fetchNotifications();
   }, []);
-
-  const fetchNotifications = async () => {
-    try {
-      const response = await axios.get('http://localhost:4000/api/notifications');
-      
-      if (response.data.success) {
-        // Format notifications from backend
-        const backendNotifs = response.data.notifications.map(notif => ({
-          id: notif._id,
-          title: notif.title,
-          message: notif.message,
-          time: getTimeAgo(notif.createdAt),
-          type: notif.severity === 'critical' ? 'error' : notif.severity === 'warning' ? 'warning' : 'info',
-          read: notif.isRead,
-          binId: notif.binId,
-          location: notif.location,
-          fillPercentage: notif.fillPercentage,
-          notificationType: notif.type,
-          dbId: notif._id
-        }));
-        
-        // Merge with existing notifications from alerts
-        setNotifications(prev => {
-          const alertNotifs = prev.filter(n => !n.dbId); // Keep only alert-generated notifications
-          return [...backendNotifs, ...alertNotifs];
-        });
-      }
-    } catch (error) {
-      console.error('Error fetching notifications:', error);
-    }
-  };
 
   // Close notification dropdown when clicking outside
   useEffect(() => {
@@ -134,7 +102,6 @@ const AlertManagement = () => {
         // Generate notifications after alerts are loaded
         setTimeout(() => {
           generateNotificationsFromAlerts(formattedAlerts);
-          fetchNotifications(); // Also fetch backend notifications
         }, 100);
       }
       setLoading(false);
@@ -147,14 +114,14 @@ const AlertManagement = () => {
   };
 
   const generateNotificationsFromAlerts = (alertsList) => {
-    const alertNotifs = [];
+    const notifs = [];
     
     // Generate notifications for all alerts
     alertsList.forEach((alert) => {
       // Notifications for status updates by Waste Collector
       if (alert.assignedTo === "Waste Collector") {
         if (alert.status === "In Progress") {
-          alertNotifs.push({
+          notifs.push({
             id: `collector-progress-${alert._id}`,
             title: "Waste Collector Working on Alert",
             message: `Waste Collector is working on alert ${alert.id || alert.alertId} - Bin ${alert.binId} at ${alert.location}`,
@@ -163,7 +130,7 @@ const AlertManagement = () => {
             read: false
           });
         } else if (alert.status === "Resolved") {
-          alertNotifs.push({
+          notifs.push({
             id: `collector-resolved-${alert._id}`,
             title: "Alert Resolved by Waste Collector",
             message: `Waste Collector resolved alert ${alert.id || alert.alertId} - Bin ${alert.binId} at ${alert.location}`,
@@ -177,7 +144,7 @@ const AlertManagement = () => {
       // Notifications for status updates by WMA Manager/Admin
       if (alert.assignedTo === "WMA Manager/Admin") {
         if (alert.status === "In Progress") {
-          alertNotifs.push({
+          notifs.push({
             id: `admin-progress-${alert._id}`,
             title: "WMA Manager/Admin Working on Alert",
             message: `WMA Manager/Admin is working on alert ${alert.id || alert.alertId} - Bin ${alert.binId} at ${alert.location}`,
@@ -186,7 +153,7 @@ const AlertManagement = () => {
             read: false
           });
         } else if (alert.status === "Resolved") {
-          alertNotifs.push({
+          notifs.push({
             id: `admin-resolved-${alert._id}`,
             title: "Alert Resolved by WMA Manager/Admin",
             message: `WMA Manager/Admin resolved alert ${alert.id || alert.alertId} - Bin ${alert.binId} at ${alert.location}`,
@@ -199,7 +166,7 @@ const AlertManagement = () => {
       
       // Notifications for critical alerts
       if (alert.severity === "Critical" && alert.status === "Open") {
-        alertNotifs.push({
+        notifs.push({
           id: `critical-${alert._id}`,
           title: "Critical Alert Requires Attention",
           message: `Critical ${alert.type} alert at ${alert.location}. Bin ID: ${alert.binId}`,
@@ -211,7 +178,7 @@ const AlertManagement = () => {
       
       // Notifications for high priority alerts
       if (alert.severity === "High" && alert.status === "Open") {
-        alertNotifs.push({
+        notifs.push({
           id: `high-${alert._id}`,
           title: "High Priority Alert",
           message: `High priority ${alert.type} alert at ${alert.location}. Bin ID: ${alert.binId}`,
@@ -223,8 +190,8 @@ const AlertManagement = () => {
     });
     
     // If no notifications generated, add a general one
-    if (alertNotifs.length === 0 && alertsList.length > 0) {
-      alertNotifs.push({
+    if (notifs.length === 0 && alertsList.length > 0) {
+      notifs.push({
         id: 'general-1',
         title: "Alert System Active",
         message: `You have ${alertsList.length} alert${alertsList.length > 1 ? 's' : ''} in the system`,
@@ -234,11 +201,7 @@ const AlertManagement = () => {
       });
     }
     
-    // Merge with existing backend notifications
-    setNotifications(prev => {
-      const backendNotifs = prev.filter(n => n.dbId); // Keep only backend notifications
-      return [...backendNotifs, ...alertNotifs];
-    });
+    setNotifications(notifs);
   };
 
   const getTimeAgo = (dateString) => {
@@ -443,40 +406,14 @@ const AlertManagement = () => {
     navigate('/login');
   };
 
-  const markAsRead = async (notificationId) => {
-    // Find the notification
-    const notif = notifications.find(n => n.id === notificationId);
-    
-    // If it's a backend notification (has dbId), update in database
-    if (notif && notif.dbId) {
-      try {
-        await axios.put(`http://localhost:4000/api/notifications/${notif.dbId}/read`);
-      } catch (error) {
-        console.error('Error marking notification as read:', error);
-      }
-    }
-    
-    // Update in local state
-    setNotifications(notifications.map(n =>
-      n.id === notificationId ? { ...n, read: true } : n
+  const markAsRead = (notificationId) => {
+    setNotifications(notifications.map(notif =>
+      notif.id === notificationId ? { ...notif, read: true } : notif
     ));
   };
 
-  const deleteNotification = async (notificationId) => {
-    // Find the notification
-    const notif = notifications.find(n => n.id === notificationId);
-    
-    // If it's a backend notification (has dbId), delete from database
-    if (notif && notif.dbId) {
-      try {
-        await axios.delete(`http://localhost:4000/api/notifications/${notif.dbId}`);
-      } catch (error) {
-        console.error('Error deleting notification:', error);
-      }
-    }
-    
-    // Remove from local state
-    setNotifications(notifications.filter(n => n.id !== notificationId));
+  const deleteNotification = (notificationId) => {
+    setNotifications(notifications.filter(notif => notif.id !== notificationId));
   };
 
   const unreadCount = notifications.filter(n => !n.read).length;
