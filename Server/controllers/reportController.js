@@ -1149,9 +1149,6 @@ const getReportDetails = async (req, res) => {
 };
 
 module.exports = {
-  generateMonthlyReport,
-  generateCustomReport,
-  getFilterOptions,
   getReportHistory,
   getReportDetails
 };

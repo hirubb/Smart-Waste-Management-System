@@ -56,7 +56,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/collections", collectionRequestRoutes);
 app.use("/api/payments", paymentRoutes);
 app.use("/api/alerts", alertRoutes);
-app.use("/api/reports", reportRoutes);
+// app.use("/api/reports", reportRoutes);
 
 
 
