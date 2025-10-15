@@ -49,16 +49,24 @@ const authRoutes = require('./routes/authRoutes');
 const collectionRequestRoutes = require("./routes/collectionRequestRoutes");
 const paymentRoutes = require("./routes/paymentRoutes");
 const alertRoutes = require("./routes/alertRoutes");
+
 const dustbinRoutes = require("./routes/dustbinRoutes");
 const notificationRoutes = require("./routes/notificationRoutes");
+
+const reportRoutes = require("./routes/reportRoutes");
+
 
 //Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/collections", collectionRequestRoutes);
 app.use("/api/payments", paymentRoutes);
 app.use("/api/alerts", alertRoutes);
+
 app.use("/api/dustbins", dustbinRoutes);
 app.use("/api/notifications", notificationRoutes);
+
+// app.use("/api/reports", reportRoutes);
+
 
 
 

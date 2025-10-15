@@ -1,17 +1,84 @@
+/**
+ * Authentication Controller
+ * 
+ * Purpose: Handle authentication operations
+ * Responsibilities:
+ * - User registration and login
+ * - Token generation and validation
+ * - Hardcoded waste manager authentication
+ * 
+ * @module authController
+ * @author Smart Waste Management System
+ * @since 2025-10-15
+ */
+
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 
+/**
+ * Hardcoded waste manager credentials
+ * Following Single Responsibility Principle: Credential validation separate from auth logic
+ * @constant
+ * @type {Object}
+ */
+const WASTE_MANAGER_CREDENTIALS = {
+  username: 'wastemanager',
+  password: '123456',
+  user: {
+    id: 'waste_manager_001',
+    name: 'Waste Manager',
+    email: 'wastemanager@system.local',
+    role: 'waste_manager',
+    accountStatus: 'active'
+  }
+};
 
-//generate token 
+/**
+ * Validates waste manager credentials
+ * Follows Single Responsibility Principle: Only validates credentials
+ * 
+ * @param {string} identifier - Username or email
+ * @param {string} password - Password
+ * @returns {boolean} - True if credentials match
+ */
+const isWasteManagerCredentials = (identifier, password) => {
+  return (
+    identifier === WASTE_MANAGER_CREDENTIALS.username &&
+    password === WASTE_MANAGER_CREDENTIALS.password
+  );
+};
+
+/**
+ * Generates JWT token for user
+ * Follows Single Responsibility Principle: Only handles token generation
+ * 
+ * @param {Object} user - User object
+ * @returns {string} - JWT token
+ */
 const generateToken = (user) => {
-return jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
-expiresIn: process.env.JWT_EXPIRES_IN || '7d',
-});
+  return jwt.sign({ id: user._id || user.id }, process.env.JWT_SECRET, {
+    expiresIn: process.env.JWT_EXPIRES_IN || '7d',
+  });
 };
 
 
-//register user
+/**
+ * User registration endpoint
+ * Follows Single Responsibility Principle: Only handles user registration
+ * 
+ * @route POST /auth/register
+ * @param {Object} req - Express request object
+ * @param {Object} req.body - Request body
+ * @param {string} req.body.name - User's name
+ * @param {string} req.body.email - User's email
+ * @param {string} req.body.password - User's password
+ * @param {string} req.body.role - User's role (optional, defaults to 'resident')
+ * @param {string} req.body.address - User's address
+ * @param {string} req.body.contactNumber - User's contact number
+ * @param {Object} req.body.location - User's location coordinates
+ * @param {Object} res - Express response object
+ */
 exports.register = async (req, res) => {
   try {
     const { name, email, password, role, address, contactNumber, location } = req.body;
@@ -69,7 +136,18 @@ exports.register = async (req, res) => {
 };
 
 
-//login user
+/**
+ * User login endpoint
+ * Supports both regular users and hardcoded waste manager
+ * Follows Open/Closed Principle: Open for extension, closed for modification
+ * 
+ * @route POST /auth/login
+ * @param {Object} req - Express request object
+ * @param {Object} req.body - Request body
+ * @param {string} req.body.email - User email or username
+ * @param {string} req.body.password - User password
+ * @param {Object} res - Express response object
+ */
 exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -82,6 +160,25 @@ exports.login = async (req, res) => {
       });
     }
 
+    // Check for hardcoded waste manager credentials first
+    if (isWasteManagerCredentials(email, password)) {
+      // Generate token for waste manager
+      const token = generateToken(WASTE_MANAGER_CREDENTIALS.user);
+
+      return res.json({
+        success: true,
+        message: 'Login successful',
+        token,
+        user: {
+          id: WASTE_MANAGER_CREDENTIALS.user.id,
+          name: WASTE_MANAGER_CREDENTIALS.user.name,
+          email: WASTE_MANAGER_CREDENTIALS.user.email,
+          role: WASTE_MANAGER_CREDENTIALS.user.role
+        }
+      });
+    }
+
+    // Regular user authentication
     // Check user exists
     const user = await User.findOne({ email });
     if (!user) {
@@ -134,6 +231,15 @@ exports.login = async (req, res) => {
   }
 };
 
+/**
+ * Get current user endpoint
+ * Returns authenticated user's information
+ * 
+ * @route GET /auth/me
+ * @param {Object} req - Express request object
+ * @param {Object} req.user - User object from auth middleware
+ * @param {Object} res - Express response object
+ */
 exports.me = async (req, res) => {
   try {
     if (!req.user) {
@@ -164,7 +270,15 @@ exports.me = async (req, res) => {
   }
 };
 
-// Get all collectors
+/**
+ * Get all collectors endpoint
+ * Returns list of active waste collectors
+ * Follows Interface Segregation Principle: Returns only necessary data
+ * 
+ * @route GET /auth/collectors
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ */
 exports.getAllCollectors = async (req, res) => {
   try {
     // Find all users with role "collector" and active status

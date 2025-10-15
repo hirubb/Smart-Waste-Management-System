@@ -42,15 +42,86 @@ const SideNavigation = () => {
                 <span>Assign Collectors</span>
               </Link>
             </li>
-            <li className="nav-item">
-              <Link to="/reports" className="nav-link">
+            <li className="nav-item has-dropdown">
+              <div
+                className="nav-link"
+                onClick={() => toggleDropdown("reports")}
+              >
                 <span>Reports & Analytics</span>
-              </Link>
+              </div>
+              {openDropdown === "reports" && (
+                <ul className="dropdown-menu">
+                  <li>
+                    <Link to="/monthly-reports">Monthly Reports</Link>
+                  </li>
+                  <li>
+                    <Link to="/custom-reports">Custom Reports</Link>
+                  </li>
+                </ul>
+              )}
             </li>
             <hr></hr>
             <li className="nav-item">
               <Link to="/profile" className="nav-link">
                 <span>Manager Profile</span>
+              </Link>
+            </li>
+            <li className="nav-item">
+              <Link to="/settings" className="nav-link">
+                <span>Settings</span>
+              </Link>
+            </li>
+          </>
+        );
+
+      case "waste_manager":
+        return (
+          <>
+            <li className="nav-item">
+              <Link to="/waste-manager-dashboard" className="nav-link">
+                <span>Dashboard</span>
+              </Link>
+            </li>
+            <li className="nav-item has-dropdown">
+              <div
+                className="nav-link"
+                onClick={() => toggleDropdown("reports")}
+              >
+                <span>Reports & Analytics</span>
+              </div>
+              {openDropdown === "reports" && (
+                <ul className="dropdown-menu">
+                  <li>
+                    <Link to="/monthly-reports">Monthly Reports</Link>
+                  </li>
+                  <li>
+                    <Link to="/custom-reports">Custom Reports</Link>
+                  </li>
+                  <li>
+                    <Link to="/report-history">Report History</Link>
+                  </li>
+                </ul>
+              )}
+            </li>
+            <li className="nav-item">
+              <Link to="/collection-summary" className="nav-link">
+                <span>Collection Analytics</span>
+              </Link>
+            </li>
+            <li className="nav-item">
+              <Link to="/assign-collectors" className="nav-link">
+                <span>Collector Management</span>
+              </Link>
+            </li>
+            <li className="nav-item">
+              <Link to="/admin-routes" className="nav-link">
+                <span>Route Optimization</span>
+              </Link>
+            </li>
+            <hr></hr>
+            <li className="nav-item">
+              <Link to="/manager/profile" className="nav-link">
+                <span>Profile</span>
               </Link>
             </li>
             <li className="nav-item">
