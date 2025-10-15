@@ -11,11 +11,37 @@
  * @since 2025-10-15
  */
 
-import React, { useContext } from "react";
+import React, { useContext, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import Colors from "../constants/colors";
-import { FileText, BarChart3, Users, Map } from "lucide-react";
+import { FileText, BarChart3, Users, Map, Filter, Info, Clock } from "lucide-react";
+import { Line, Doughnut } from "react-chartjs-2";
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  ArcElement,
+  Title,
+  Tooltip,
+  Legend,
+  Filler
+} from "chart.js";
+
+// Register ChartJS components
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  ArcElement,
+  Title,
+  Tooltip,
+  Legend,
+  Filler
+);
 
 /**
  * WasteManagerDashboard - Main dashboard for waste manager
@@ -25,6 +51,60 @@ const WasteManagerDashboard = () => {
   // Destructure user from AuthContext following Dependency Inversion Principle
   const { user } = useContext(AuthContext);
   const navigate = useNavigate();
+  const [chartData, setChartData] = useState({
+    wasteVolume: null,
+    performance: null
+  });
+
+  /**
+   * Load chart data on component mount
+   */
+  useEffect(() => {
+    // Sample data for Waste Volume Over Time (Line Chart)
+    const wasteVolumeData = {
+      labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct'],
+      datasets: [
+        {
+          label: 'Waste Volume (tons)',
+          data: [65, 72, 68, 80, 75, 85, 90, 88, 95, 92],
+          borderColor: '#667eea',
+          backgroundColor: 'rgba(102, 126, 234, 0.1)',
+          fill: true,
+          tension: 0.4,
+          pointRadius: 5,
+          pointHoverRadius: 7,
+          pointBackgroundColor: '#667eea',
+          pointBorderColor: '#fff',
+          pointBorderWidth: 2,
+        }
+      ]
+    };
+
+    // Sample data for Average Collection Performance (Doughnut Chart)
+    const performanceData = {
+      labels: ['Completed', 'In Progress', 'Pending', 'Delayed'],
+      datasets: [
+        {
+          label: 'Collection Status',
+          data: [65, 20, 10, 5],
+          backgroundColor: [
+            '#28a745',
+            '#17a2b8',
+            '#ffc107',
+            '#dc3545'
+          ],
+          borderColor: '#fff',
+          borderWidth: 2,
+          hoverOffset: 10
+        }
+      ]
+    };
+
+    setChartData({
+      wasteVolume: wasteVolumeData,
+      performance: performanceData
+    });
+  }, []);
 
   /**
    * Navigation handler for features
@@ -42,6 +122,20 @@ const WasteManagerDashboard = () => {
       icon: <FileText size={40} />,
       path: "/monthly-reports",
       color: "#667eea"
+    },
+    {
+      title: "Custom Reports",
+      description: "Generate customized reports with advanced filters",
+      icon: <Filter size={40} />,
+      path: "/custom-reports",
+      color: "#f093fb"
+    },
+    {
+      title: "Report History",
+      description: "View and manage all generated reports",
+      icon: <Clock size={40} />,
+      path: "/report-history",
+      color: "#ff6b6b"
     },
     {
       title: "Collection Analytics",
@@ -90,97 +184,294 @@ const WasteManagerDashboard = () => {
         </h1>
       </header>
 
-      {/* Welcome Section */}
+      {/* Welcome Section - Compact */}
       <section
         style={{
           backgroundColor: Colors.card,
-          padding: "3rem",
-          borderRadius: "16px",
-          boxShadow: "0 6px 20px rgba(0,0,0,0.1)",
-          textAlign: "center",
-          maxWidth: "800px",
-          margin: "0 auto",
+          padding: "1.5rem 2rem",
+          borderRadius: "12px",
+          boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+          maxWidth: "1200px",
+          margin: "0 auto 2rem auto",
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          flexWrap: "wrap",
+          gap: "1rem"
         }}
       >
+        <div>
+          <h2 
+            style={{ 
+              color: Colors.textPrimary, 
+              fontSize: "1.8rem", 
+              marginBottom: "0.3rem",
+              fontWeight: "700",
+            }}
+          >
+            Welcome, {user?.name || "Waste Manager"}
+          </h2>
+          <p 
+            style={{ 
+              color: Colors.textSecondary, 
+              fontSize: "0.95rem",
+              margin: 0,
+            }}
+          >
+            Your dashboard is ready for management operations.
+          </p>
+        </div>
+
+        {/* User Role Badge */}
         <div
           style={{
             display: "inline-block",
             backgroundColor: Colors.primaryButton,
             color: "#fff",
-            padding: "1rem 2rem",
-            borderRadius: "50px",
-            marginBottom: "2rem",
-            fontSize: "1rem",
+            padding: "0.6rem 1.5rem",
+            borderRadius: "25px",
+            fontSize: "0.9rem",
             fontWeight: "600",
             letterSpacing: "0.5px",
           }}
         >
-          Waste Manager
+          {user?.role || "waste_manager"}
         </div>
+      </section>
 
-        <h2 
-          style={{ 
-            color: Colors.textPrimary, 
-            fontSize: "2.5rem", 
-            marginBottom: "1rem",
-            fontWeight: "700",
-          }}
-        >
-          Welcome, {user?.name || "Waste Manager"}
-        </h2>
-
-        <p 
-          style={{ 
-            color: Colors.textSecondary, 
-            fontSize: "1.2rem",
-            lineHeight: "1.6",
-          }}
-        >
-          Your dashboard is ready for management operations.
-        </p>
-
-        {/* Divider */}
+      {/* Analytics & Charts Section - Top Priority */}
+      <section
+        style={{
+          marginBottom: "3rem",
+        }}
+      >
+        <h3 style={{ color: Colors.textPrimary, marginBottom: "1.5rem", textAlign: "center" }}>
+          Analytics Overview
+        </h3>
         <div
           style={{
-            width: "60px",
-            height: "4px",
-            backgroundColor: Colors.primaryButton,
-            margin: "2rem auto",
-            borderRadius: "2px",
-          }}
-        />
-
-        {/* User Information Card */}
-        <div
-          style={{
-            display: "inline-block",
-            backgroundColor: Colors.background,
-            padding: "1.5rem 3rem",
-            borderRadius: "12px",
-            marginTop: "1rem",
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(380px, 1fr))",
+            gap: "1.5rem",
+            maxWidth: "1200px",
+            margin: "0 auto"
           }}
         >
-          <p 
-            style={{ 
-              color: Colors.textSecondary, 
-              fontSize: "0.9rem",
-              marginBottom: "0.5rem",
-              textTransform: "uppercase",
-              letterSpacing: "1px",
+          {/* Waste Volume Over Time Chart */}
+          <div
+            style={{
+              backgroundColor: Colors.card,
+              padding: "0",
+              borderRadius: "12px",
+              boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+              overflow: "hidden"
             }}
           >
-            Role
-          </p>
-          <p 
-            style={{ 
-              color: Colors.textPrimary, 
-              fontSize: "1.4rem",
-              fontWeight: "600",
-              margin: 0,
+            {/* Chart Header */}
+            <div style={{ padding: "1.5rem", borderBottom: `1px solid ${Colors.border}` }}>
+              <h4 style={{ color: Colors.textPrimary, margin: 0, fontSize: "1.1rem", fontWeight: "600" }}>
+                Waste Volume Over Time
+              </h4>
+            </div>
+
+            {/* Chart Content */}
+            <div
+              style={{
+                padding: "2rem",
+                minHeight: "300px",
+                backgroundColor: "#fff"
+              }}
+            >
+              {chartData.wasteVolume ? (
+                <Line
+                  data={chartData.wasteVolume}
+                  options={{
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                      legend: {
+                        display: true,
+                        position: 'top',
+                        labels: {
+                          color: Colors.textPrimary,
+                          font: {
+                            size: 12,
+                            weight: '600'
+                          },
+                          padding: 15
+                        }
+                      },
+                      tooltip: {
+                        enabled: true,
+                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                        titleColor: '#fff',
+                        bodyColor: '#fff',
+                        padding: 12,
+                        displayColors: true,
+                        callbacks: {
+                          label: function(context) {
+                            return context.dataset.label + ': ' + context.parsed.y + ' tons';
+                          }
+                        }
+                      }
+                    },
+                    scales: {
+                      y: {
+                        beginAtZero: true,
+                        grid: {
+                          color: 'rgba(0, 0, 0, 0.05)'
+                        },
+                        ticks: {
+                          color: Colors.textSecondary,
+                          callback: function(value) {
+                            return value + ' t';
+                          }
+                        }
+                      },
+                      x: {
+                        grid: {
+                          display: false
+                        },
+                        ticks: {
+                          color: Colors.textSecondary
+                        }
+                      }
+                    },
+                    interaction: {
+                      mode: 'index',
+                      intersect: false,
+                    }
+                  }}
+                />
+              ) : (
+                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '250px' }}>
+                  <p style={{ color: Colors.textSecondary }}>Loading chart...</p>
+                </div>
+              )}
+            </div>
+
+            {/* Chart Footer */}
+            <div
+              style={{
+                padding: "1rem 1.5rem",
+                backgroundColor: "#f8f9fa",
+                borderTop: `1px solid ${Colors.border}`,
+                display: "flex",
+                alignItems: "center",
+                gap: "0.5rem"
+              }}
+            >
+              <Info size={16} color={Colors.textSecondary} />
+              <p style={{ color: Colors.textSecondary, fontSize: "0.85rem", margin: 0 }}>
+                Hover over data points for detailed information
+              </p>
+            </div>
+          </div>
+
+          {/* Average Collection Performance Chart */}
+          <div
+            style={{
+              backgroundColor: Colors.card,
+              padding: "0",
+              borderRadius: "12px",
+              boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+              overflow: "hidden"
             }}
           >
-            {user?.role || "waste_manager"}
-          </p>
+            {/* Chart Header */}
+            <div style={{ padding: "1.5rem", borderBottom: `1px solid ${Colors.border}` }}>
+              <h4 style={{ color: Colors.textPrimary, margin: 0, fontSize: "1.1rem", fontWeight: "600" }}>
+                Average Collection Performance
+              </h4>
+            </div>
+
+            {/* Chart Content */}
+            <div
+              style={{
+                padding: "2rem",
+                minHeight: "300px",
+                backgroundColor: "#fff",
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center"
+              }}
+            >
+              {chartData.performance ? (
+                <div style={{ maxWidth: "300px", width: "100%" }}>
+                  <Doughnut
+                    data={chartData.performance}
+                    options={{
+                      responsive: true,
+                      maintainAspectRatio: true,
+                      plugins: {
+                        legend: {
+                          display: true,
+                          position: 'bottom',
+                          labels: {
+                            color: Colors.textPrimary,
+                            font: {
+                              size: 11,
+                              weight: '600'
+                            },
+                            padding: 15,
+                            usePointStyle: true,
+                            pointStyle: 'circle'
+                          }
+                        },
+                        tooltip: {
+                          enabled: true,
+                          backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                          titleColor: '#fff',
+                          bodyColor: '#fff',
+                          padding: 12,
+                          displayColors: true,
+                          callbacks: {
+                            label: function(context) {
+                              const label = context.label || '';
+                              const value = context.parsed || 0;
+                              const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                              const percentage = ((value / total) * 100).toFixed(1);
+                              return label + ': ' + percentage + '%';
+                            }
+                          }
+                        }
+                      },
+                      cutout: '60%',
+                      onClick: (event, elements) => {
+                        if (elements.length > 0) {
+                          const index = elements[0].index;
+                          const label = chartData.performance.labels[index];
+                          console.log('Clicked on:', label);
+                          // Add navigation logic here if needed
+                        }
+                      }
+                    }}
+                  />
+                </div>
+              ) : (
+                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '250px' }}>
+                  <p style={{ color: Colors.textSecondary }}>Loading chart...</p>
+                </div>
+              )}
+            </div>
+
+            {/* Chart Footer */}
+            <div
+              style={{
+                padding: "1rem 1.5rem",
+                backgroundColor: "#f8f9fa",
+                borderTop: `1px solid ${Colors.border}`,
+                display: "flex",
+                alignItems: "center",
+                gap: "0.5rem"
+              }}
+            >
+              <Info size={16} color={Colors.textSecondary} />
+              <p style={{ color: Colors.textSecondary, fontSize: "0.85rem", margin: 0 }}>
+                Click chart elements to drill down into specific data
+              </p>
+            </div>
+          </div>
         </div>
       </section>
 

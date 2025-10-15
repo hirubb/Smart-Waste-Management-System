@@ -35,6 +35,8 @@ import AssignedRoutes from './pages/AssignedRoutes';
 import AdminRoutes from './pages/AdminRoutes';
 import WasteManagerDashboard from './pages/WasteManagerDashboard';
 import MonthlyReports from './pages/MonthlyReports';
+import CustomReports from './pages/CustomReports';
+import ReportHistory from './pages/ReportHistory';
 
 /**
  * Main App Component
@@ -124,6 +126,26 @@ function App() {
             element={
               <ProtectedRoute>
                 <MonthlyReports />
+              </ProtectedRoute>
+            } 
+          />
+
+          {/* Custom Reports - Protected route */}
+          <Route 
+            path="/custom-reports" 
+            element={
+              <ProtectedRoute>
+                <CustomReports />
+              </ProtectedRoute>
+            } 
+          />
+
+          {/* Report History - Protected route */}
+          <Route 
+            path="/report-history" 
+            element={
+              <ProtectedRoute>
+                <ReportHistory />
               </ProtectedRoute>
             } 
           />
