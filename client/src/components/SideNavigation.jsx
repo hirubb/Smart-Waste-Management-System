@@ -14,7 +14,6 @@ const SideNavigation = () => {
   }, [user]);
 
   const toggleDropdown = (menuName) => {
-    console.log('Toggling dropdown:', menuName, 'Current open:', openDropdown);
     setOpenDropdown(openDropdown === menuName ? null : menuName);
   };
 
@@ -240,23 +239,17 @@ const SideNavigation = () => {
             <li className={`nav-item has-dropdown ${openDropdown === "payment" ? "active" : ""}`}>
               <div
                 className="nav-link"
-                onClick={() => {
-                  console.log('Payment clicked, current openDropdown:', openDropdown);
-                  toggleDropdown("payment");
-                }}
+                onClick={() => toggleDropdown("payment")}
               >
                 <span>Payment</span>
               </div>
-              {(() => {
-                console.log('Checking payment dropdown - openDropdown value:', openDropdown);
-                return openDropdown === "payment";
-              })() && (
+              {openDropdown === "payment" && (
                 <ul className="dropdown-menu">
                   <li>
-                    <Link to="/payment-history">Payment History</Link>
+                    <Link to="/payment-history" onClick={() => setOpenDropdown(null)}>Payment History</Link>
                   </li>
                   <li>
-                    <Link to="/payment-methods">Payment Methods</Link>
+                    <Link to="/payment-methods" onClick={() => setOpenDropdown(null)}>Payment Methods</Link>
                   </li>
                 </ul>
               )}
