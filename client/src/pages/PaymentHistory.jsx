@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext } from "react";
 import { Container, Card, Table, Badge, Spinner, Alert, Button, Row, Col, Form } from "react-bootstrap";
-import { FaReceipt, FaCreditCard, FaMobileAlt, FaMoneyBillWave, FaUniversity, FaDownload, FaEye } from "react-icons/fa";
+import { FaReceipt, FaCreditCard, FaMobileAlt, FaMoneyBillWave, FaUniversity, FaEye } from "react-icons/fa";
 import { AuthContext } from "../context/AuthContext";
 import api from "../services/api";
 
@@ -20,7 +20,18 @@ const PaymentHistory = () => {
     try {
       setLoading(true);
       const response = await api.get("/payments/user/all");
-      setPayments(response.data.payments || []);
+      const paymentsData = response.data.payments || [];
+      
+      // Remove duplicates based on _id
+      const uniquePayments = paymentsData.reduce((acc, current) => {
+        const isDuplicate = acc.find(item => item._id === current._id);
+        if (!isDuplicate) {
+          acc.push(current);
+        }
+        return acc;
+      }, []);
+      
+      setPayments(uniquePayments);
       setError("");
     } catch (err) {
       console.error("Error fetching payments:", err);
@@ -104,18 +115,12 @@ const PaymentHistory = () => {
   return (
     <Container className="py-4" style={{ maxWidth: "1200px" }}>
       {/* Header */}
-      <div className="d-flex justify-content-between align-items-center mb-4">
-        <div>
-          <h2 className="mb-1">
-            <FaReceipt className="me-2 text-primary" />
-            Payment History
-          </h2>
-          <p className="text-muted mb-0">View all your payment transactions</p>
-        </div>
-        <Button variant="outline-primary" size="sm">
-          <FaDownload className="me-2" />
-          Export Report
-        </Button>
+      <div className="mb-4">
+        <h2 className="mb-1">
+          <FaReceipt className="me-2 text-primary" />
+          Payment History
+        </h2>
+        <p className="text-muted mb-0">View all your payment transactions</p>
       </div>
 
       {/* Summary Cards */}

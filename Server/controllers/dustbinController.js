@@ -54,7 +54,7 @@ exports.getDustbinById = async (req, res) => {
 // Create new dustbin
 exports.createDustbin = async (req, res) => {
   try {
-    const { binId, location, fillPercentage, latitude, longitude } = req.body;
+    const { binId, location, fillPercentage, latitude, longitude, binType, locationZone, collectionRoute } = req.body;
 
     // Check if bin ID already exists
     const existingBin = await Dustbin.findOne({ binId });
@@ -71,6 +71,9 @@ exports.createDustbin = async (req, res) => {
       fillPercentage,
       latitude,
       longitude,
+      binType,
+      locationZone,
+      collectionRoute,
       addedBy: req.user ? req.user._id : null
     });
 
@@ -112,7 +115,7 @@ exports.createDustbin = async (req, res) => {
 // Update dustbin
 exports.updateDustbin = async (req, res) => {
   try {
-    const { binId, location, fillPercentage, latitude, longitude } = req.body;
+    const { binId, location, fillPercentage, latitude, longitude, binType, locationZone, collectionRoute } = req.body;
 
     let dustbin = await Dustbin.findById(req.params.id);
 
@@ -140,6 +143,9 @@ exports.updateDustbin = async (req, res) => {
     dustbin.fillPercentage = fillPercentage !== undefined ? fillPercentage : dustbin.fillPercentage;
     dustbin.latitude = latitude !== undefined ? latitude : dustbin.latitude;
     dustbin.longitude = longitude !== undefined ? longitude : dustbin.longitude;
+    dustbin.binType = binType !== undefined ? binType : dustbin.binType;
+    dustbin.locationZone = locationZone !== undefined ? locationZone : dustbin.locationZone;
+    dustbin.collectionRoute = collectionRoute !== undefined ? collectionRoute : dustbin.collectionRoute;
 
     await dustbin.save();
 

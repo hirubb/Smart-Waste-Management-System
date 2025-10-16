@@ -28,6 +28,9 @@ const SensorUI = () => {
     fillPercentage: 0,
     latitude: null,
     longitude: null,
+    binType: "",
+    locationZone: "",
+    collectionRoute: "",
   });
 
   const [mapCenter, setMapCenter] = useState([7.8731, 80.7718]); // Sri Lanka coordinates as default
@@ -135,7 +138,10 @@ const SensorUI = () => {
         location: formData.location,
         fillPercentage: parseInt(formData.fillPercentage),
         latitude: formData.latitude,
-        longitude: formData.longitude
+        longitude: formData.longitude,
+        binType: formData.binType,
+        locationZone: formData.locationZone,
+        collectionRoute: formData.collectionRoute
       };
 
       let response;
@@ -183,7 +189,10 @@ const SensorUI = () => {
       location: bin.location,
       fillPercentage: bin.fillPercentage,
       latitude: bin.latitude,
-      longitude: bin.longitude
+      longitude: bin.longitude,
+      binType: bin.binType || "",
+      locationZone: bin.locationZone || "",
+      collectionRoute: bin.collectionRoute || ""
     });
     setShowAddModal(true);
   };
@@ -218,7 +227,10 @@ const SensorUI = () => {
       location: "",
       fillPercentage: 0,
       latitude: null,
-      longitude: null
+      longitude: null,
+      binType: "",
+      locationZone: "",
+      collectionRoute: ""
     });
   };
 
@@ -576,6 +588,57 @@ const SensorUI = () => {
                 Click anywhere on the map to select the bin location
               </Form.Text>
             </Form.Group>
+
+            <Row>
+              <Col md={4}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Bin Type</Form.Label>
+                  <Form.Select
+                    name="binType"
+                    value={formData.binType}
+                    onChange={handleChange}
+                  >
+                    <option value="">Select Type</option>
+                    <option value="residential">Residential</option>
+                    <option value="commercial">Commercial</option>
+                    <option value="industrial">Industrial</option>
+                    <option value="recycling">Recycling</option>
+                  </Form.Select>
+                </Form.Group>
+              </Col>
+              <Col md={4}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Location Zone</Form.Label>
+                  <Form.Select
+                    name="locationZone"
+                    value={formData.locationZone}
+                    onChange={handleChange}
+                  >
+                    <option value="">Select Zone</option>
+                    <option value="zone1">North District</option>
+                    <option value="zone2">Downtown</option>
+                    <option value="zone3">East Zone</option>
+                    <option value="zone4">West Side</option>
+                  </Form.Select>
+                </Form.Group>
+              </Col>
+              <Col md={4}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Collection Route</Form.Label>
+                  <Form.Select
+                    name="collectionRoute"
+                    value={formData.collectionRoute}
+                    onChange={handleChange}
+                  >
+                    <option value="">Select Route</option>
+                    <option value="route1">Route 1</option>
+                    <option value="route2">Route 2</option>
+                    <option value="route3">Route 3</option>
+                    <option value="route4">Route 4</option>
+                  </Form.Select>
+                </Form.Group>
+              </Col>
+            </Row>
           </Modal.Body>
           <Modal.Footer>
             <Button variant="secondary" onClick={handleCloseModal} disabled={submitting}>

@@ -151,13 +151,13 @@ const AlertManagement = () => {
     
     // Generate notifications for all alerts
     alertsList.forEach((alert) => {
-      // Notifications for status updates by Waste Collector
-      if (alert.assignedTo === "Waste Collector") {
+      // Notifications for status updates by Waste Collector or All
+      if (alert.assignedTo === "Waste Collector" || alert.assignedTo === "All") {
         if (alert.status === "In Progress") {
           alertNotifs.push({
             id: `collector-progress-${alert._id}`,
-            title: "Waste Collector Working on Alert",
-            message: `Waste Collector is working on alert ${alert.id || alert.alertId} - Bin ${alert.binId} at ${alert.location}`,
+            title: `${alert.assignedTo === "All" ? "Team" : "Waste Collector"} Working on Alert`,
+            message: `${alert.assignedTo === "All" ? "Team member" : "Waste Collector"} is working on alert ${alert.id || alert.alertId} - Bin ${alert.binId} at ${alert.location}`,
             time: getTimeAgo(alert.updatedAt || alert.createdAtOriginal),
             type: "info",
             read: false
@@ -165,8 +165,8 @@ const AlertManagement = () => {
         } else if (alert.status === "Resolved") {
           alertNotifs.push({
             id: `collector-resolved-${alert._id}`,
-            title: "Alert Resolved by Waste Collector",
-            message: `Waste Collector resolved alert ${alert.id || alert.alertId} - Bin ${alert.binId} at ${alert.location}`,
+            title: `Alert Resolved by ${alert.assignedTo === "All" ? "Team" : "Waste Collector"}`,
+            message: `${alert.assignedTo === "All" ? "Team member" : "Waste Collector"} resolved alert ${alert.id || alert.alertId} - Bin ${alert.binId} at ${alert.location}`,
             time: getTimeAgo(alert.updatedAt || alert.createdAtOriginal),
             type: "success",
             read: false
@@ -174,13 +174,13 @@ const AlertManagement = () => {
         }
       }
       
-      // Notifications for status updates by WMA Manager/Admin
-      if (alert.assignedTo === "WMA Manager/Admin") {
+      // Notifications for status updates by WMA Manager/Admin or All
+      if (alert.assignedTo === "WMA Manager/Admin" || alert.assignedTo === "All") {
         if (alert.status === "In Progress") {
           alertNotifs.push({
             id: `admin-progress-${alert._id}`,
-            title: "WMA Manager/Admin Working on Alert",
-            message: `WMA Manager/Admin is working on alert ${alert.id || alert.alertId} - Bin ${alert.binId} at ${alert.location}`,
+            title: `${alert.assignedTo === "All" ? "Team" : "WMA Manager/Admin"} Working on Alert`,
+            message: `${alert.assignedTo === "All" ? "Team member" : "WMA Manager/Admin"} is working on alert ${alert.id || alert.alertId} - Bin ${alert.binId} at ${alert.location}`,
             time: getTimeAgo(alert.updatedAt || alert.createdAtOriginal),
             type: "info",
             read: false
@@ -188,8 +188,8 @@ const AlertManagement = () => {
         } else if (alert.status === "Resolved") {
           alertNotifs.push({
             id: `admin-resolved-${alert._id}`,
-            title: "Alert Resolved by WMA Manager/Admin",
-            message: `WMA Manager/Admin resolved alert ${alert.id || alert.alertId} - Bin ${alert.binId} at ${alert.location}`,
+            title: `Alert Resolved by ${alert.assignedTo === "All" ? "Team" : "WMA Manager/Admin"}`,
+            message: `${alert.assignedTo === "All" ? "Team member" : "WMA Manager/Admin"} resolved alert ${alert.id || alert.alertId} - Bin ${alert.binId} at ${alert.location}`,
             time: getTimeAgo(alert.updatedAt || alert.createdAtOriginal),
             type: "success",
             read: false
@@ -375,32 +375,124 @@ const AlertManagement = () => {
     }]
   };
 
+  // Calculate trends based on selected time filter
+  const calculateTrends = () => {
+    const now = new Date();
+    let periods = [];
+    let labels = [];
+
+    if (timeFilter === "This Week") {
+      // Last 7 days
+      for (let i = 6; i >= 0; i--) {
+        const date = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
+        const start = new Date(date);
+        start.setHours(0, 0, 0, 0);
+        const end = new Date(date);
+        end.setHours(23, 59, 59, 999);
+        periods.push({ start, end });
+        const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        labels.push(dayNames[date.getDay()]);
+      }
+    } else if (timeFilter === "Last 3 Months") {
+      // Last 3 months including current month
+      const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      for (let i = 2; i >= 0; i--) {
+        const monthStart = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        monthStart.setHours(0, 0, 0, 0);
+        const monthEnd = new Date(now.getFullYear(), now.getMonth() - i + 1, 0);
+        monthEnd.setHours(23, 59, 59, 999);
+        periods.push({ start: monthStart, end: monthEnd });
+        labels.push(monthNames[monthStart.getMonth()]);
+      }
+    } else {
+      // This Month (default) - 4 weeks
+      periods = [
+        { label: 'Week 1', start: new Date(now.getTime() - 28 * 24 * 60 * 60 * 1000), end: new Date(now.getTime() - 21 * 24 * 60 * 60 * 1000) },
+        { label: 'Week 2', start: new Date(now.getTime() - 21 * 24 * 60 * 60 * 1000), end: new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000) },
+        { label: 'Week 3', start: new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000), end: new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000) },
+        { label: 'Week 4', start: new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000), end: now }
+      ];
+      labels = ['Week 1', 'Week 2', 'Week 3', 'Week 4'];
+    }
+
+    const trendsData = { Critical: [], High: [], Medium: [], Low: [] };
+
+    periods.forEach(period => {
+      const periodAlerts = alerts.filter(alert => {
+        const alertDate = new Date(alert.createdAtOriginal || alert.createdAt);
+        return alertDate >= period.start && alertDate <= period.end;
+      });
+
+      trendsData.Critical.push(periodAlerts.filter(a => a.severity === 'Critical').length);
+      trendsData.High.push(periodAlerts.filter(a => a.severity === 'High').length);
+      trendsData.Medium.push(periodAlerts.filter(a => a.severity === 'Medium').length);
+      trendsData.Low.push(periodAlerts.filter(a => a.severity === 'Low').length);
+    });
+
+    return { data: trendsData, labels };
+  };
+
+  const { data: weeklyTrends, labels: trendLabels } = calculateTrends();
+
   const alertTrendsData = {
-    labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+    labels: trendLabels,
     datasets: [
       {
         label: 'Critical',
-        data: [0, 0, 0, criticalCount],
+        data: weeklyTrends.Critical,
         borderColor: '#dc3545',
         backgroundColor: 'rgba(220, 53, 69, 0.1)',
-        fill: true,
-        tension: 0.4
+        fill: false,
+        tension: 0.4,
+        borderWidth: 3,
+        pointRadius: 6,
+        pointHoverRadius: 8,
+        pointBackgroundColor: '#dc3545',
+        pointBorderColor: '#fff',
+        pointBorderWidth: 2
       },
       {
         label: 'High',
-        data: [0, 0, 0, highCount],
+        data: weeklyTrends.High,
         borderColor: '#fd7e14',
         backgroundColor: 'rgba(253, 126, 20, 0.1)',
-        fill: true,
-        tension: 0.4
+        fill: false,
+        tension: 0.4,
+        borderWidth: 3,
+        pointRadius: 6,
+        pointHoverRadius: 8,
+        pointBackgroundColor: '#fd7e14',
+        pointBorderColor: '#fff',
+        pointBorderWidth: 2
       },
       {
         label: 'Medium',
-        data: [0, 0, 0, mediumCount],
+        data: weeklyTrends.Medium,
         borderColor: '#0d6efd',
         backgroundColor: 'rgba(13, 110, 253, 0.1)',
-        fill: true,
-        tension: 0.4
+        fill: false,
+        tension: 0.4,
+        borderWidth: 3,
+        pointRadius: 6,
+        pointHoverRadius: 8,
+        pointBackgroundColor: '#0d6efd',
+        pointBorderColor: '#fff',
+        pointBorderWidth: 2
+      },
+      {
+        label: 'Low',
+        data: weeklyTrends.Low,
+        borderColor: '#28a745',
+        backgroundColor: 'rgba(40, 167, 69, 0.2)',
+        fill: false,
+        tension: 0.4,
+        borderWidth: 4,
+        pointRadius: 7,
+        pointHoverRadius: 9,
+        pointBackgroundColor: '#28a745',
+        pointBorderColor: '#fff',
+        pointBorderWidth: 3,
+        borderDash: []
       }
     ]
   };
@@ -894,9 +986,9 @@ const AlertManagement = () => {
           <div className="d-flex justify-content-between align-items-center">
             <h4 className="fw-bold">Alert Trends Overview</h4>
             <Form.Select style={{ width: 'auto' }} value={timeFilter} onChange={(e) => setTimeFilter(e.target.value)}>
-              <option>This Month ▼</option>
-              <option>This Week</option>
-              <option>Last 3 Months</option>
+              <option value="This Month">This Month ▼</option>
+              <option value="This Week">This Week</option>
+              <option value="Last 3 Months">Last 3 Months</option>
             </Form.Select>
           </div>
         </Col>

@@ -77,6 +77,21 @@ const LiveMonitor = () => {
       filtered = filtered.filter(bin => selectedFillStatus.includes(bin.status));
     }
 
+    // Bin type filter
+    if (selectedBinType && selectedBinType !== 'all') {
+      filtered = filtered.filter(bin => bin.binType === selectedBinType);
+    }
+
+    // Location zone filter
+    if (selectedZone && selectedZone !== 'all') {
+      filtered = filtered.filter(bin => bin.locationZone === selectedZone);
+    }
+
+    // Collection route filter
+    if (selectedRoute && selectedRoute !== 'all') {
+      filtered = filtered.filter(bin => bin.collectionRoute === selectedRoute);
+    }
+
     setFilteredBins(filtered);
   };
 
@@ -283,9 +298,10 @@ const LiveMonitor = () => {
                   onChange={(e) => setSelectedBinType(e.target.value)}
                 >
                   <option value="all">All Types</option>
-                  <option value="general">General Waste</option>
-                  <option value="recyclable">Recyclable</option>
-                  <option value="organic">Organic</option>
+                  <option value="residential">Residential</option>
+                  <option value="commercial">Commercial</option>
+                  <option value="industrial">Industrial</option>
+                  <option value="recycling">Recycling</option>
                 </Form.Select>
               </div>
 
@@ -297,9 +313,11 @@ const LiveMonitor = () => {
                   onChange={(e) => setSelectedZone(e.target.value)}
                 >
                   <option value="all">All Zones</option>
-                  <option value="zone1">Zone 1</option>
-                  <option value="zone2">Zone 2</option>
-                  <option value="zone3">Zone 3</option>
+                  <option value="zone1">North District</option>
+                  <option value="zone2">Downtown</option>
+                  <option value="zone3">East Zone</option>
+                  <option value="zone4">West Side</option>
+
                 </Form.Select>
               </div>
 
@@ -314,6 +332,8 @@ const LiveMonitor = () => {
                   <option value="route1">Route 1</option>
                   <option value="route2">Route 2</option>
                   <option value="route3">Route 3</option>
+                  <option value="route4">Route 4</option>
+
                 </Form.Select>
               </div>
 

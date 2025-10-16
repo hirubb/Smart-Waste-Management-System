@@ -1,6 +1,6 @@
 import React, { useState, useContext, useEffect } from "react";
-import { Container, Row, Col, Card, Form, Button, Alert } from "react-bootstrap";
-import { FaUser, FaEnvelope, FaPhone, FaMapMarkerAlt, FaSave, FaEdit } from "react-icons/fa";
+import { Container, Row, Col, Card, Form, Button, Alert, Modal } from "react-bootstrap";
+import { FaUser, FaEnvelope, FaPhone, FaMapMarkerAlt, FaSave, FaEdit, FaLock } from "react-icons/fa";
 import { AuthContext } from "../context/AuthContext";
 import axios from "axios";
 
@@ -10,6 +10,10 @@ const Profile = () => {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState("");
   const [error, setError] = useState("");
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [passwordLoading, setPasswordLoading] = useState(false);
+  const [passwordSuccess, setPasswordSuccess] = useState("");
+  const [passwordError, setPasswordError] = useState("");
 
   const [formData, setFormData] = useState({
     name: "",
@@ -17,6 +21,12 @@ const Profile = () => {
     phone: "",
     address: "",
     role: ""
+  });
+
+  const [passwordData, setPasswordData] = useState({
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: ""
   });
 
   // Update form data when user data loads
@@ -75,6 +85,78 @@ const Profile = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handlePasswordChange = (e) => {
+    const { name, value } = e.target;
+    setPasswordData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handlePasswordSubmit = async (e) => {
+    e.preventDefault();
+    setPasswordError("");
+    setPasswordSuccess("");
+
+    // Validation
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      setPasswordError("New password and confirm password do not match");
+      return;
+    }
+
+    if (passwordData.newPassword.length < 6) {
+      setPasswordError("Password must be at least 6 characters long");
+      return;
+    }
+
+    setPasswordLoading(true);
+
+    try {
+      const token = localStorage.getItem('token');
+      const response = await axios.put(
+        'http://localhost:4000/api/auth/change-password',
+        {
+          currentPassword: passwordData.currentPassword,
+          newPassword: passwordData.newPassword
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }
+      );
+
+      if (response.data.success) {
+        setPasswordSuccess("Password changed successfully!");
+        setPasswordData({
+          currentPassword: "",
+          newPassword: "",
+          confirmPassword: ""
+        });
+        setTimeout(() => {
+          setShowPasswordModal(false);
+          setPasswordSuccess("");
+        }, 2000);
+      }
+    } catch (err) {
+      console.error("Error changing password:", err);
+      setPasswordError(err.response?.data?.message || "Failed to change password. Please try again.");
+    } finally {
+      setPasswordLoading(false);
+    }
+  };
+
+  const handleClosePasswordModal = () => {
+    setShowPasswordModal(false);
+    setPasswordData({
+      currentPassword: "",
+      newPassword: "",
+      confirmPassword: ""
+    });
+    setPasswordError("");
+    setPasswordSuccess("");
   };
 
   const getRoleBadge = (role) => {
@@ -315,9 +397,14 @@ const Profile = () => {
               <div className="d-flex justify-content-between align-items-center mb-3">
                 <div>
                   <h6 className="mb-1">Password</h6>
-                  <small className="text-muted">Last changed 30 days ago</small>
+                  <small className="text-muted">••••••••</small>
                 </div>
-                <Button variant="outline-primary" size="sm">
+                <Button 
+                  variant="outline-primary" 
+                  size="sm"
+                  onClick={() => setShowPasswordModal(true)}
+                >
+                  <FaLock className="me-2" />
                   Change Password
                 </Button>
               </div>
@@ -335,6 +422,100 @@ const Profile = () => {
           </Card>
         </Col>
       </Row>
+
+      {/* Change Password Modal */}
+      <Modal show={showPasswordModal} onHide={handleClosePasswordModal} centered>
+        <Modal.Header closeButton>
+          <Modal.Title>
+            <FaLock className="me-2" />
+            Change Password
+          </Modal.Title>
+        </Modal.Header>
+        <Form onSubmit={handlePasswordSubmit}>
+          <Modal.Body>
+            {passwordSuccess && (
+              <Alert variant="success" dismissible onClose={() => setPasswordSuccess("")}>
+                {passwordSuccess}
+              </Alert>
+            )}
+
+            {passwordError && (
+              <Alert variant="danger" dismissible onClose={() => setPasswordError("")}>
+                {passwordError}
+              </Alert>
+            )}
+
+            <Form.Group className="mb-3">
+              <Form.Label>Current Password *</Form.Label>
+              <Form.Control
+                type="password"
+                name="currentPassword"
+                value={passwordData.currentPassword}
+                onChange={handlePasswordChange}
+                placeholder="Enter your current password"
+                required
+                disabled={passwordLoading}
+              />
+            </Form.Group>
+
+            <Form.Group className="mb-3">
+              <Form.Label>New Password *</Form.Label>
+              <Form.Control
+                type="password"
+                name="newPassword"
+                value={passwordData.newPassword}
+                onChange={handlePasswordChange}
+                placeholder="Enter new password (min 6 characters)"
+                required
+                minLength={6}
+                disabled={passwordLoading}
+              />
+              <Form.Text className="text-muted">
+                Password must be at least 6 characters long
+              </Form.Text>
+            </Form.Group>
+
+            <Form.Group className="mb-3">
+              <Form.Label>Confirm New Password *</Form.Label>
+              <Form.Control
+                type="password"
+                name="confirmPassword"
+                value={passwordData.confirmPassword}
+                onChange={handlePasswordChange}
+                placeholder="Confirm new password"
+                required
+                disabled={passwordLoading}
+              />
+            </Form.Group>
+          </Modal.Body>
+          <Modal.Footer>
+            <Button 
+              variant="secondary" 
+              onClick={handleClosePasswordModal}
+              disabled={passwordLoading}
+            >
+              Cancel
+            </Button>
+            <Button 
+              variant="primary" 
+              type="submit"
+              disabled={passwordLoading}
+            >
+              {passwordLoading ? (
+                <>
+                  <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                  Changing...
+                </>
+              ) : (
+                <>
+                  <FaSave className="me-2" />
+                  Change Password
+                </>
+              )}
+            </Button>
+          </Modal.Footer>
+        </Form>
+      </Modal>
     </Container>
   );
 };
