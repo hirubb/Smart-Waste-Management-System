@@ -43,6 +43,7 @@ import MonthlyReports from './pages/MonthlyReports';
 import CustomReports from './pages/CustomReports';
 import ReportHistory from './pages/ReportHistory';
 import WasteManagementSystem from "./pages/WasteManagementSystem";
+import RoutesCollectors from "./pages/Routes&Collectors";
 
 
 /**
@@ -159,8 +160,17 @@ function App() {
                     </ProtectedRoute>
                 }
             />
+            <Route
+                path="/create-rc"
+                element={
+                    <ProtectedRoute>
+                        <RoutesCollectors/>
+                    </ProtectedRoute>
+                }
+            />
 
-          {/* Report History - Protected route */}
+
+            {/* Report History - Protected route */}
           <Route 
             path="/report-history" 
             element={

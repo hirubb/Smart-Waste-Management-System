@@ -42,6 +42,11 @@ const SideNavigation = () => {
                 <span>Assign Collectors</span>
               </Link>
             </li>
+              <li className="nav-item">
+                  <Link to="/create-rc" className="nav-link">
+                      <span>Routes & Collectors</span>
+                  </Link>
+              </li>
             <li className={`nav-item has-dropdown ${openDropdown === "reports" ? "active" : ""}`}>
               <div
                 className="nav-link"
