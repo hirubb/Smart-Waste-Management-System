@@ -1,0 +1,640 @@
+/* Main Container */
+.waste-management-container {
+    min-height: 100vh;
+    background-color: #f9fafb;
+}
+
+/* Tabs */
+.tabs-container {
+    background-color: white;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.tabs-wrapper {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+}
+
+.tabs-flex {
+    display: flex;
+    gap: 2rem;
+}
+
+.tab-button {
+    padding: 1rem 0.5rem;
+    border-bottom: 2px solid transparent;
+    font-weight: 500;
+    font-size: 0.875rem;
+    transition: all 0.2s;
+    background: none;
+    cursor: pointer;
+    color: #6b7280;
+}
+
+.tab-button:hover {
+    color: #374151;
+}
+
+.tab-button.active {
+    border-bottom-color: #16a34a;
+    color: #16a34a;
+}
+
+/* Main Content */
+.main-content {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem;
+}
+
+/* Grid Layouts */
+.grid-12 {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: 1.5rem;
+}
+
+.col-span-3 {
+    grid-column: span 3;
+}
+
+.col-span-9 {
+    grid-column: span 9;
+}
+
+.grid-cols-2 {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+}
+
+.grid-cols-4 {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+}
+
+/* Cards */
+.card {
+    background-color: white;
+    border-radius: 0.5rem;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+    padding: 1.5rem;
+}
+
+.space-y-6 > * + * {
+    margin-top: 1.5rem;
+}
+
+.space-y-4 > * + * {
+    margin-top: 1rem;
+}
+
+.space-y-2 > * + * {
+    margin-top: 0.5rem;
+}
+
+/* Typography */
+.section-title {
+    font-weight: 600;
+    color: #111827;
+    margin-bottom: 1rem;
+}
+
+.section-title-lg {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #111827;
+    margin-bottom: 1.5rem;
+}
+
+/* Form Elements */
+.form-label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #374151;
+    margin-bottom: 0.5rem;
+}
+
+.form-select,
+.form-input {
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+}
+
+.form-select:focus,
+.form-input:focus {
+    outline: none;
+    ring: 2px;
+    ring-color: #16a34a;
+    border-color: transparent;
+}
+
+/* Search Input */
+.search-wrapper {
+    position: relative;
+}
+
+.search-icon {
+    position: absolute;
+    left: 0.75rem;
+    top: 0.625rem;
+    width: 1.25rem;
+    height: 1.25rem;
+    color: #9ca3af;
+}
+
+.search-input {
+    width: 100%;
+    padding: 0.5rem 0.75rem 0.5rem 2.5rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.5rem;
+}
+
+.search-input:focus {
+    outline: none;
+    ring: 2px;
+    ring-color: #16a34a;
+    border-color: transparent;
+}
+
+/* Route List */
+.routes-list {
+    max-height: 24rem;
+    overflow-y: auto;
+}
+
+.route-item {
+    padding: 0.75rem;
+    border-radius: 0.5rem;
+    border: 2px solid #e5e7eb;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.route-item:hover {
+    border-color: #d1d5db;
+}
+
+.route-item.selected {
+    border-color: #16a34a;
+    background-color: #f0fdf4;
+}
+
+.route-item-content {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+}
+
+.route-item-details {
+    flex: 1;
+}
+
+.route-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.route-icon {
+    width: 1rem;
+    height: 1rem;
+    color: #6b7280;
+}
+
+.route-name {
+    font-weight: 500;
+    font-size: 0.875rem;
+}
+
+.route-area {
+    font-size: 0.75rem;
+    color: #6b7280;
+    margin-top: 0.25rem;
+}
+
+.route-stats {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+
+.route-stat {
+    font-size: 0.75rem;
+    color: #4b5563;
+}
+
+.stat-separator {
+    font-size: 0.75rem;
+    color: #9ca3af;
+}
+
+/* Status Badges */
+.status-badge {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 9999px;
+    font-weight: 500;
+}
+
+.status-planned {
+    background-color: #dbeafe;
+    color: #1d4ed8;
+}
+
+.status-optimized {
+    background-color: #dcfce7;
+    color: #15803d;
+}
+
+.status-active {
+    background-color: #fed7aa;
+    color: #c2410c;
+}
+
+.status-delayed {
+    background-color: #fee2e2;
+    color: #b91c1c;
+}
+
+.status-default {
+    background-color: #f3f4f6;
+    color: #374151;
+}
+
+/* Stat Cards */
+.stat-card {
+    background-color: #f9fafb;
+    padding: 1rem;
+    border-radius: 0.5rem;
+}
+
+.stat-label {
+    font-size: 0.75rem;
+    color: #6b7280;
+    margin-bottom: 0.25rem;
+}
+
+.stat-value {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #111827;
+}
+
+/* Buttons */
+.btn {
+    width: 100%;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.5rem;
+    font-weight: 500;
+    transition: all 0.2s;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.btn-primary {
+    background-color: #16a34a;
+    color: white;
+}
+
+.btn-primary:hover {
+    background-color: #15803d;
+}
+
+.btn-primary:disabled {
+    background-color: #9ca3af;
+    cursor: not-allowed;
+}
+
+.btn-success {
+    background-color: #16a34a;
+    color: white;
+    flex: 1;
+}
+
+.btn-success:hover {
+    background-color: #15803d;
+}
+
+.btn-danger {
+    background-color: #dc2626;
+    color: white;
+    flex: 1;
+}
+
+.btn-danger:hover {
+    background-color: #b91c1c;
+}
+
+.btn-icon {
+    width: 1.25rem;
+    height: 1.25rem;
+}
+
+.btn-group {
+    display: flex;
+    gap: 1rem;
+}
+
+/* Comparison Cards */
+.comparison-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.comparison-card {
+    padding: 1rem;
+    border-radius: 0.5rem;
+    border: 2px solid;
+}
+
+.comparison-current {
+    background-color: #fef2f2;
+    border-color: #fecaca;
+}
+
+.comparison-optimized {
+    background-color: #f0fdf4;
+    border-color: #bbf7d0;
+}
+
+.comparison-title {
+    font-weight: 500;
+    margin-bottom: 1rem;
+}
+
+.comparison-current .comparison-title {
+    color: #7f1d1d;
+}
+
+.comparison-optimized .comparison-title {
+    color: #14532d;
+}
+
+.comparison-row {
+    display: flex;
+    justify-content: space-between;
+}
+
+.comparison-label {
+    font-size: 0.875rem;
+    color: #4b5563;
+}
+
+.comparison-value {
+    font-weight: 500;
+}
+
+/* Improvements Card */
+.improvements-card {
+    background-color: #eff6ff;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.improvements-title {
+    font-weight: 500;
+    color: #1e3a8a;
+    margin-bottom: 0.75rem;
+}
+
+.improvements-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+}
+
+.improvement-label {
+    font-size: 0.75rem;
+    color: #1d4ed8;
+    margin-bottom: 0.25rem;
+}
+
+.improvement-value {
+    font-size: 1.125rem;
+    font-weight: bold;
+    color: #1e3a8a;
+}
+
+/* Map Placeholder */
+.map-container {
+    background-color: #f3f4f6;
+    border-radius: 0.5rem;
+    height: 24rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.map-placeholder {
+    text-align: center;
+}
+
+.map-icon {
+    width: 4rem;
+    height: 4rem;
+    color: #9ca3af;
+    margin: 0 auto 1rem;
+}
+
+.map-text {
+    color: #6b7280;
+}
+
+.map-subtext {
+    font-size: 0.875rem;
+    color: #9ca3af;
+    margin-top: 0.5rem;
+}
+
+/* Collectors */
+.collectors-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+}
+
+.collector-card {
+    padding: 1.25rem;
+    border-radius: 0.5rem;
+    border: 2px solid #e5e7eb;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.collector-card:hover {
+    border-color: #d1d5db;
+}
+
+.collector-card.selected {
+    border-color: #16a34a;
+    background-color: #f0fdf4;
+}
+
+.collector-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+}
+
+.collector-info {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.collector-avatar {
+    width: 3rem;
+    height: 3rem;
+    background-color: #e5e7eb;
+    border-radius: 9999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.collector-avatar-icon {
+    width: 1.5rem;
+    height: 1.5rem;
+    color: #4b5563;
+}
+
+.collector-name {
+    font-weight: 500;
+    color: #111827;
+}
+
+.collector-id {
+    font-size: 0.875rem;
+    color: #6b7280;
+}
+
+.collector-status {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 9999px;
+}
+
+.collector-status.available {
+    background-color: #dcfce7;
+    color: #15803d;
+}
+
+.collector-status.on-route {
+    background-color: #fed7aa;
+    color: #c2410c;
+}
+
+.collector-status.on-break {
+    background-color: #f3f4f6;
+    color: #374151;
+}
+
+.collector-details {
+    margin-bottom: 1rem;
+}
+
+.collector-detail-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.875rem;
+}
+
+.collector-detail-label {
+    color: #4b5563;
+}
+
+.collector-detail-value {
+    font-weight: 500;
+}
+
+/* Workload Bar */
+.workload-bar {
+    width: 100%;
+    background-color: #e5e7eb;
+    border-radius: 9999px;
+    height: 0.5rem;
+}
+
+.workload-fill {
+    height: 0.5rem;
+    border-radius: 9999px;
+}
+
+.workload-low {
+    background-color: #16a34a;
+}
+
+.workload-medium {
+    background-color: #ca8a04;
+}
+
+.workload-high {
+    background-color: #dc2626;
+}
+
+/* Assignment Confirmation */
+.assignment-confirmation {
+    background-color: #eff6ff;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.assignment-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+}
+
+.assignment-row:last-child {
+    margin-bottom: 0;
+}
+
+.assignment-label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #1e3a8a;
+}
+
+.assignment-value {
+    font-size: 0.875rem;
+    color: #1d4ed8;
+}
+
+/* Selected Route Info */
+.selected-route-info {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: #f0fdf4;
+    padding: 1rem;
+    border-radius: 0.5rem;
+}
+
+.selected-route-details p:first-child {
+    font-weight: 500;
+    color: #111827;
+}
+
+.selected-route-details p:last-child {
+    font-size: 0.875rem;
+    color: #4b5563;
+}

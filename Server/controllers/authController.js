@@ -273,9 +273,7 @@ exports.me = async (req, res) => {
       error: error.message
     });
   }
-};
-
-// Update user profile
+};// Update user profile
 exports.updateProfile = async (req, res) => {
   try {
     const { name, email, contactNumber, address } = req.body;
@@ -396,3 +394,4 @@ exports.changePassword = async (req, res) => {
     });
   }
 };
+
