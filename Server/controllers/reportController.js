@@ -1000,7 +1000,7 @@ exports.getFilterOptions = async (req, res) => {
  * @route GET /api/reports/history
  * @access Protected (waste_manager, authority)
  */
-const getReportHistory = async (req, res) => {
+exports.getReportHistory = async (req, res) => {
   try {
     const { page = 1, limit = 10, reportType, startDate, endDate } = req.query;
     
@@ -1098,7 +1098,7 @@ const getReportHistory = async (req, res) => {
  * @route GET /api/reports/:reportId
  * @access Protected (waste_manager, authority)
  */
-const getReportDetails = async (req, res) => {
+exports.getReportDetails = async (req, res) => {
   try {
     const { reportId } = req.params;
     
@@ -1146,9 +1146,4 @@ const getReportDetails = async (req, res) => {
       error: error.message
     });
   }
-};
-
-module.exports = {
-  getReportHistory,
-  getReportDetails
 };

@@ -1,3 +1,5 @@
+
+
 /**
  * Main Application Component
  * 
@@ -33,11 +35,15 @@ import PaymentMethods from './pages/PaymentMethods';
 import AlertManagement from './pages/AlertManagement';
 import AssignedRoutes from './pages/AssignedRoutes';
 import AdminRoutes from './pages/AdminRoutes';
+import Profile from './pages/Profile';
+import SensorUI from './pages/SensorUI';
+import LiveMonitor from './pages/LiveMonitor';
 import WasteManagerDashboard from './pages/WasteManagerDashboard';
 import MonthlyReports from './pages/MonthlyReports';
 import CustomReports from './pages/CustomReports';
 import ReportHistory from './pages/ReportHistory';
 import WasteManagementSystem from "./pages/WasteManagementSystem";
+
 
 /**
  * Main App Component
@@ -50,7 +56,8 @@ function App() {
   const isAlertManagementPage = location.pathname === '/alert-management';
   const isAssignedRoutesPage = location.pathname === '/assigned-routes';
   const isAdminRoutesPage = location.pathname === '/admin-routes';
-  const hideHeader = isAlertManagementPage || isAssignedRoutesPage || isAdminRoutesPage;
+  const isLiveMonitorPage = location.pathname === '/live-monitor';
+  const hideHeader = isAlertManagementPage || isAssignedRoutesPage || isAdminRoutesPage || isLiveMonitorPage;
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh' }}>
@@ -76,6 +83,9 @@ function App() {
           <Route path="/alert-management" element={<AlertManagement />} />
           <Route path="/assigned-routes" element={<AssignedRoutes />} />
           <Route path="/admin-routes" element={<AdminRoutes />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/sensorUI" element={<SensorUI />} />
+          <Route path="/live-monitor" element={<LiveMonitor />} />
 
           {/* Protected routes - Require authentication */}
           <Route 

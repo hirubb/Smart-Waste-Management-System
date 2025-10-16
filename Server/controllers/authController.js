@@ -273,11 +273,11 @@ exports.me = async (req, res) => {
       error: error.message
     });
   }
-};  // Update user profile
+};// Update user profile
 exports.updateProfile = async (req, res) => {
   try {
     const { name, email, contactNumber, address } = req.body;
-
+    
     // Get user ID from auth middleware
     const userId = req.user._id;
 
@@ -335,7 +335,7 @@ exports.updateProfile = async (req, res) => {
 exports.changePassword = async (req, res) => {
   try {
     const { currentPassword, newPassword } = req.body;
-
+    
     // Validate input
     if (!currentPassword || !newPassword) {
       return res.status(400).json({
