@@ -34,6 +34,19 @@
       "react-app/jest"
     ]
   },
+  "jest": {
+    "moduleNameMapper": {
+      "^react-router-dom$": "<rootDir>/node_modules/react-router-dom/dist/index.js",
+      "^react-router$": "<rootDir>/node_modules/react-router/dist/production/index.js",
+      "^react-router/dom$": "<rootDir>/node_modules/react-router/dist/production/dom-export.js",
+      "^axios$": "<rootDir>/node_modules/axios/dist/axios.js",
+      "\\.(jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga)$": "<rootDir>/__mocks__/fileMock.js",
+      "\\.(css|less|scss|sass)$": "<rootDir>/__mocks__/styleMock.js"
+    },
+    "transformIgnorePatterns": [
+      "node_modules/(?!(react-router|react-router-dom|axios|react-leaflet|@react-leaflet)/)"
+    ]
+  },
   "browserslist": {
     "production": [
       ">0.2%",
