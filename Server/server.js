@@ -50,14 +50,16 @@ const collectionRequestRoutes = require("./routes/collectionRequestRoutes");
 const paymentRoutes = require("./routes/paymentRoutes");
 const alertRoutes = require("./routes/alertRoutes");
 const reportRoutes = require("./routes/reportRoutes");
-
+const routeRoutes = require('./routes/Route');
+const collectorRoutes = require('./routes/Collector');
 //Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/collections", collectionRequestRoutes);
 app.use("/api/payments", paymentRoutes);
 app.use("/api/alerts", alertRoutes);
 // app.use("/api/reports", reportRoutes);
-
+app.use('/api/routes', routeRoutes);
+app.use('/api/collectors', collectorRoutes);
 
 
 // Root route

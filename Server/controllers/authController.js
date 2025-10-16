@@ -1,27 +1,8 @@
-/**
- * Authentication Controller
- * 
- * Purpose: Handle authentication operations
- * Responsibilities:
- * - User registration and login
- * - Token generation and validation
- * - Hardcoded waste manager authentication
- * 
- * @module authController
- * @author Smart Waste Management System
- * @since 2025-10-15
- */
-
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const Collector = require('../models/Collector');
 
-/**
- * Hardcoded waste manager credentials
- * Following Single Responsibility Principle: Credential validation separate from auth logic
- * @constant
- * @type {Object}
- */
 const WASTE_MANAGER_CREDENTIALS = {
   username: 'wastemanager',
   password: '123456',
@@ -34,61 +15,44 @@ const WASTE_MANAGER_CREDENTIALS = {
   }
 };
 
-/**
- * Validates waste manager credentials
- * Follows Single Responsibility Principle: Only validates credentials
- * 
- * @param {string} identifier - Username or email
- * @param {string} password - Password
- * @returns {boolean} - True if credentials match
- */
 const isWasteManagerCredentials = (identifier, password) => {
   return (
-    identifier === WASTE_MANAGER_CREDENTIALS.username &&
-    password === WASTE_MANAGER_CREDENTIALS.password
+      identifier === WASTE_MANAGER_CREDENTIALS.username &&
+      password === WASTE_MANAGER_CREDENTIALS.password
   );
 };
 
-/**
- * Generates JWT token for user
- * Follows Single Responsibility Principle: Only handles token generation
- * 
- * @param {Object} user - User object
- * @returns {string} - JWT token
- */
 const generateToken = (user) => {
   return jwt.sign({ id: user._id || user.id }, process.env.JWT_SECRET, {
     expiresIn: process.env.JWT_EXPIRES_IN || '7d',
   });
 };
 
-
 /**
- * User registration endpoint
- * Follows Single Responsibility Principle: Only handles user registration
- * 
- * @route POST /auth/register
- * @param {Object} req - Express request object
- * @param {Object} req.body - Request body
- * @param {string} req.body.name - User's name
- * @param {string} req.body.email - User's email
- * @param {string} req.body.password - User's password
- * @param {string} req.body.role - User's role (optional, defaults to 'resident')
- * @param {string} req.body.address - User's address
- * @param {string} req.body.contactNumber - User's contact number
- * @param {Object} req.body.location - User's location coordinates
- * @param {Object} res - Express response object
+ * Register user and optionally create collector profile
  */
 exports.register = async (req, res) => {
   try {
-    const { name, email, password, role, address, contactNumber, location } = req.body;
+    const {
+      name,
+      email,
+      password,
+      role,
+      address,
+      contactNumber,
+      location,
+      // Collector-specific fields (optional)
+      vehicleId,
+      vehicleType,
+      vehicleCapacity
+    } = req.body;
 
     // Check if user exists
     let user = await User.findOne({ email });
     if (user) {
-      return res.status(400).json({ 
+      return res.status(400).json({
         success: false,
-        message: 'User already exists with this email' 
+        message: 'User already exists with this email'
       });
     }
 
@@ -109,10 +73,24 @@ exports.register = async (req, res) => {
 
     await user.save();
 
+    // If registering as collector, create collector profile
+    let collectorProfile = null;
+    if (role === 'collector' && vehicleId) {
+      collectorProfile = new Collector({
+        userId: user._id,
+        vehicleId,
+        vehicleType: vehicleType || 'Truck',
+        vehicleCapacity: vehicleCapacity || 1000,
+        status: 'Available',
+        workload: '0%'
+      });
+      await collectorProfile.save();
+    }
+
     // Generate JWT
     const token = generateToken(user);
 
-    res.status(201).json({
+    const response = {
       success: true,
       message: 'User registered successfully',
       token,
@@ -124,47 +102,46 @@ exports.register = async (req, res) => {
         address: user.address,
         contactNumber: user.contactNumber
       }
-    });
+    };
+
+    // Include collector profile if created
+    if (collectorProfile) {
+      response.collectorProfile = {
+        id: collectorProfile._id,
+        vehicleId: collectorProfile.vehicleId,
+        vehicleType: collectorProfile.vehicleType,
+        status: collectorProfile.status
+      };
+    }
+
+    res.status(201).json(response);
   } catch (error) {
     console.error('Register error:', error);
-    res.status(500).json({ 
+    res.status(500).json({
       success: false,
-      message: 'Server error during registration', 
-      error: error.message 
+      message: 'Server error during registration',
+      error: error.message
     });
   }
 };
 
-
 /**
- * User login endpoint
- * Supports both regular users and hardcoded waste manager
- * Follows Open/Closed Principle: Open for extension, closed for modification
- * 
- * @route POST /auth/login
- * @param {Object} req - Express request object
- * @param {Object} req.body - Request body
- * @param {string} req.body.email - User email or username
- * @param {string} req.body.password - User password
- * @param {Object} res - Express response object
+ * Login and include collector profile if user is a collector
  */
 exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // Validate input
     if (!email || !password) {
-      return res.status(400).json({ 
+      return res.status(400).json({
         success: false,
-        message: 'Please provide email and password' 
+        message: 'Please provide email and password'
       });
     }
 
-    // Check for hardcoded waste manager credentials first
+    // Check for hardcoded waste manager
     if (isWasteManagerCredentials(email, password)) {
-      // Generate token for waste manager
       const token = generateToken(WASTE_MANAGER_CREDENTIALS.user);
-
       return res.json({
         success: true,
         message: 'Login successful',
@@ -179,36 +156,39 @@ exports.login = async (req, res) => {
     }
 
     // Regular user authentication
-    // Check user exists
     const user = await User.findOne({ email });
     if (!user) {
-      return res.status(400).json({ 
+      return res.status(400).json({
         success: false,
-        message: 'Invalid credentials' 
+        message: 'Invalid credentials'
       });
     }
 
-    // Check account status
-    if (user.accountStatus === 'inactive') {
-      return res.status(403).json({ 
+    if (user.accountStatus !== 'active') {
+      return res.status(403).json({
         success: false,
-        message: 'Account is inactive. Please contact support.' 
+        message: 'Account is inactive. Please contact support.'
       });
     }
 
-    // Verify password
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      return res.status(400).json({ 
+      return res.status(400).json({
         success: false,
-        message: 'Invalid credentials' 
+        message: 'Invalid credentials'
       });
     }
 
-    // Generate JWT
+    // If user is a collector, fetch their profile
+    let collectorProfile = null;
+    if (user.role === 'collector') {
+      collectorProfile = await Collector.findOne({ userId: user._id })
+          .populate('assignedRoute', 'routeName routeCode');
+    }
+
     const token = generateToken(user);
 
-    res.json({
+    const response = {
       success: true,
       message: 'Login successful',
       token,
@@ -220,25 +200,34 @@ exports.login = async (req, res) => {
         address: user.address,
         contactNumber: user.contactNumber
       }
-    });
+    };
+
+    // Include collector profile if exists
+    if (collectorProfile) {
+      response.collectorProfile = {
+        id: collectorProfile._id,
+        status: collectorProfile.status,
+        currentLocation: collectorProfile.currentLocation,
+        workload: collectorProfile.workload,
+        vehicleId: collectorProfile.vehicleId,
+        vehicleType: collectorProfile.vehicleType,
+        assignedRoute: collectorProfile.assignedRoute
+      };
+    }
+
+    res.json(response);
   } catch (error) {
     console.error('Login error:', error);
-    res.status(500).json({ 
+    res.status(500).json({
       success: false,
-      message: 'Server error during login', 
-      error: error.message 
+      message: 'Server error during login',
+      error: error.message
     });
   }
 };
 
 /**
- * Get current user endpoint
- * Returns authenticated user's information
- * 
- * @route GET /auth/me
- * @param {Object} req - Express request object
- * @param {Object} req.user - User object from auth middleware
- * @param {Object} res - Express response object
+ * Get current user with collector profile if applicable
  */
 exports.me = async (req, res) => {
   try {
@@ -249,61 +238,39 @@ exports.me = async (req, res) => {
       });
     }
 
-    res.json({
+    const user = req.user;
+
+    // If user is a collector, fetch their profile
+    let collectorProfile = null;
+    if (user.role === 'collector') {
+      collectorProfile = await Collector.findOne({ userId: user._id })
+          .populate('assignedRoute', 'routeName routeCode');
+    }
+
+    const response = {
       success: true,
       user: {
-        id: req.user._id,
-        name: req.user.name,
-        email: req.user.email,
-        role: req.user.role,
-        address: req.user.address,
-        contactNumber: req.user.contactNumber
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        address: user.address,
+        contactNumber: user.contactNumber,
+        accountStatus: user.accountStatus
       }
-    });
+    };
+
+    if (collectorProfile) {
+      response.collectorProfile = collectorProfile;
+    }
+
+    res.json(response);
   } catch (error) {
     console.error('Me error:', error);
     res.status(500).json({
       success: false,
       message: 'Server error',
       error: error.message
-    });
-  }
-};
-
-/**
- * Get all collectors endpoint
- * Returns list of active waste collectors
- * Follows Interface Segregation Principle: Returns only necessary data
- * 
- * @route GET /auth/collectors
- * @param {Object} req - Express request object
- * @param {Object} res - Express response object
- */
-exports.getAllCollectors = async (req, res) => {
-  try {
-    // Find all users with role "collector" and active status
-    const collectors = await User.find({ role: "collector", accountStatus: "active" })
-      .select("-password") // exclude password field for security
-      .sort({ createdAt: -1 }); // newest first
-
-    if (!collectors.length) {
-      return res.status(404).json({
-        success: false,
-        message: "No collectors found",
-      });
-    }
-
-    res.status(200).json({
-      success: true,
-      message: "Collectors retrieved successfully",
-      collectors,
-    });
-  } catch (error) {
-    console.error("Error fetching collectors:", error);
-    res.status(500).json({
-      success: false,
-      message: "Server error while fetching collectors",
-      error: error.message,
     });
   }
 };

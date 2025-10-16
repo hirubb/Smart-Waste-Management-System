@@ -8,6 +8,6 @@ router.post('/login', login);
 router.get('/me', auth(), me);
 
 // Get all collectors
-router.get("/collectors", getAllCollectors);
+// router.get("/collectors", getAllCollectors);
 
 module.exports = router;
