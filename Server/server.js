@@ -1,3 +1,5 @@
+Server
+
 const express = require("express");
 require("dotenv").config();
 const mongoose = require("mongoose");
@@ -41,8 +43,8 @@ app.use((error, req, res, next) => {
 
 // Connect to MongoDB
 mongoose.connect(DB_URL)
-.then(() => console.log("✅ Connected to MongoDB"))
-.catch((err) => console.error("❌ MongoDB connection error:", err));
+    .then(() => console.log("✅ Connected to MongoDB"))
+    .catch((err) => console.error("❌ MongoDB connection error:", err));
 
 
 const authRoutes = require('./routes/authRoutes');
@@ -52,6 +54,10 @@ const alertRoutes = require("./routes/alertRoutes");
 const reportRoutes = require("./routes/reportRoutes");
 const routeRoutes = require('./routes/Route');
 const collectorRoutes = require('./routes/Collector');
+const dustbinRoutes = require("./routes/dustbinRoutes");
+const notificationRoutes = require("./routes/notificationRoutes");
+
+
 //Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/collections", collectionRequestRoutes);
@@ -60,6 +66,8 @@ app.use("/api/alerts", alertRoutes);
 // app.use("/api/reports", reportRoutes);
 app.use('/api/routes', routeRoutes);
 app.use('/api/collectors', collectorRoutes);
+app.use("/api/dustbins", dustbinRoutes);
+app.use("/api/notifications", notificationRoutes);
 
 
 // Root route
@@ -68,7 +76,7 @@ app.get("/", (req, res) => {
     message: "Legal Aid Backend API",
     version: "1.0.0",
     endpoints: {
-      
+
     }
   });
 });
