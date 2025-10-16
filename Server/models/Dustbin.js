@@ -32,6 +32,21 @@ const dustbinSchema = new mongoose.Schema({
     enum: ['Empty', 'Half Full', 'Full', 'Overflow'],
     default: 'Empty'
   },
+  binType: {
+    type: String,
+    enum: ['residential', 'commercial', 'industrial', 'recycling', ''],
+    default: ''
+  },
+  locationZone: {
+    type: String,
+    enum: ['zone1', 'zone2', 'zone3', 'zone4', ''],
+    default: ''
+  },
+  collectionRoute: {
+    type: String,
+    enum: ['route1', 'route2', 'route3', 'route4', ''],
+    default: ''
+  },
   addedBy: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User'

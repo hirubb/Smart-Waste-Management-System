@@ -50,9 +50,9 @@ const AdminRoutes = () => {
       const response = await axios.get('http://localhost:4000/api/alerts');
       
       if (response.data.success) {
-        // Filter alerts assigned to WMA Manager/Admin
+        // Filter alerts assigned to WMA Manager/Admin or All
         const adminAlerts = response.data.alerts.filter(
-          alert => alert.assignedTo === "WMA Manager/Admin"
+          alert => alert.assignedTo === "WMA Manager/Admin" || alert.assignedTo === "All"
         );
 
         // Format the dates for display

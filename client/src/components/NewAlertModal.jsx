@@ -334,6 +334,7 @@ const NewAlertModal = ({ show, handleClose, onAlertCreated, editAlert = null }) 
               onChange={handleChange}
             >
               <option value="">Select Role...</option>
+              <option value="All">All</option>
               <option value="Waste Collector">Waste Collector</option>
               <option value="WMA Manager/Admin">WMA Manager/Admin</option>
             </Form.Select>

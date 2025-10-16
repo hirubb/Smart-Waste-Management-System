@@ -47,9 +47,9 @@ const AssignedRoutes = () => {
       const response = await axios.get('http://localhost:4000/api/alerts');
       
       if (response.data.success) {
-        // Filter alerts assigned to Waste Collector
+        // Filter alerts assigned to Waste Collector or All
         const collectorAlerts = response.data.alerts.filter(
-          alert => alert.assignedTo === "Waste Collector"
+          alert => alert.assignedTo === "Waste Collector" || alert.assignedTo === "All"
         );
 
         // Format the dates for display

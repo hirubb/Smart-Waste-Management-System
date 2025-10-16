@@ -151,13 +151,13 @@ const AlertManagement = () => {
     
     // Generate notifications for all alerts
     alertsList.forEach((alert) => {
-      // Notifications for status updates by Waste Collector
-      if (alert.assignedTo === "Waste Collector") {
+      // Notifications for status updates by Waste Collector or All
+      if (alert.assignedTo === "Waste Collector" || alert.assignedTo === "All") {
         if (alert.status === "In Progress") {
           alertNotifs.push({
             id: `collector-progress-${alert._id}`,
-            title: "Waste Collector Working on Alert",
-            message: `Waste Collector is working on alert ${alert.id || alert.alertId} - Bin ${alert.binId} at ${alert.location}`,
+            title: `${alert.assignedTo === "All" ? "Team" : "Waste Collector"} Working on Alert`,
+            message: `${alert.assignedTo === "All" ? "Team member" : "Waste Collector"} is working on alert ${alert.id || alert.alertId} - Bin ${alert.binId} at ${alert.location}`,
             time: getTimeAgo(alert.updatedAt || alert.createdAtOriginal),
             type: "info",
             read: false
@@ -165,8 +165,8 @@ const AlertManagement = () => {
         } else if (alert.status === "Resolved") {
           alertNotifs.push({
             id: `collector-resolved-${alert._id}`,
-            title: "Alert Resolved by Waste Collector",
-            message: `Waste Collector resolved alert ${alert.id || alert.alertId} - Bin ${alert.binId} at ${alert.location}`,
+            title: `Alert Resolved by ${alert.assignedTo === "All" ? "Team" : "Waste Collector"}`,
+            message: `${alert.assignedTo === "All" ? "Team member" : "Waste Collector"} resolved alert ${alert.id || alert.alertId} - Bin ${alert.binId} at ${alert.location}`,
             time: getTimeAgo(alert.updatedAt || alert.createdAtOriginal),
             type: "success",
             read: false
@@ -174,13 +174,13 @@ const AlertManagement = () => {
         }
       }
       
-      // Notifications for status updates by WMA Manager/Admin
-      if (alert.assignedTo === "WMA Manager/Admin") {
+      // Notifications for status updates by WMA Manager/Admin or All
+      if (alert.assignedTo === "WMA Manager/Admin" || alert.assignedTo === "All") {
         if (alert.status === "In Progress") {
           alertNotifs.push({
             id: `admin-progress-${alert._id}`,
-            title: "WMA Manager/Admin Working on Alert",
-            message: `WMA Manager/Admin is working on alert ${alert.id || alert.alertId} - Bin ${alert.binId} at ${alert.location}`,
+            title: `${alert.assignedTo === "All" ? "Team" : "WMA Manager/Admin"} Working on Alert`,
+            message: `${alert.assignedTo === "All" ? "Team member" : "WMA Manager/Admin"} is working on alert ${alert.id || alert.alertId} - Bin ${alert.binId} at ${alert.location}`,
             time: getTimeAgo(alert.updatedAt || alert.createdAtOriginal),
             type: "info",
             read: false
@@ -188,8 +188,8 @@ const AlertManagement = () => {
         } else if (alert.status === "Resolved") {
           alertNotifs.push({
             id: `admin-resolved-${alert._id}`,
-            title: "Alert Resolved by WMA Manager/Admin",
-            message: `WMA Manager/Admin resolved alert ${alert.id || alert.alertId} - Bin ${alert.binId} at ${alert.location}`,
+            title: `Alert Resolved by ${alert.assignedTo === "All" ? "Team" : "WMA Manager/Admin"}`,
+            message: `${alert.assignedTo === "All" ? "Team member" : "WMA Manager/Admin"} resolved alert ${alert.id || alert.alertId} - Bin ${alert.binId} at ${alert.location}`,
             time: getTimeAgo(alert.updatedAt || alert.createdAtOriginal),
             type: "success",
             read: false
@@ -399,6 +399,14 @@ const AlertManagement = () => {
         data: [0, 0, 0, mediumCount],
         borderColor: '#0d6efd',
         backgroundColor: 'rgba(13, 110, 253, 0.1)',
+        fill: true,
+        tension: 0.4
+      },
+      {
+        label: 'Low',
+        data: [0, 0, 0, lowCount],
+        borderColor: '#28a745',
+        backgroundColor: 'rgba(40, 167, 69, 0.1)',
         fill: true,
         tension: 0.4
       }
