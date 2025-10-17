@@ -1,5 +1,3 @@
-
-
 /**
  * Main Application Component
  * 
@@ -40,10 +38,9 @@ import SensorUI from './pages/SensorUI';
 import LiveMonitor from './pages/LiveMonitor';
 import WasteManagerDashboard from './pages/WasteManagerDashboard';
 import MonthlyReports from './pages/MonthlyReports';
-import CustomReports from './pages/CustomReports';
 import ReportHistory from './pages/ReportHistory';
-import WasteManagementSystem from "./pages/WasteManagementSystem";
-import RoutesCollectors from "./pages/Routes&Collectors";
+import ReportGeneration from './pages/ReportGeneration';
+
 
 
 /**
@@ -58,14 +55,21 @@ function App() {
   const isAssignedRoutesPage = location.pathname === '/assigned-routes';
   const isAdminRoutesPage = location.pathname === '/admin-routes';
   const isLiveMonitorPage = location.pathname === '/live-monitor';
-  const hideHeader = isAlertManagementPage || isAssignedRoutesPage || isAdminRoutesPage || isLiveMonitorPage;
+  const isWasteManagerDashboard = location.pathname === '/waste-manager-dashboard';
+  const isMonthlyReportsPage = location.pathname === '/monthly-reports';
+  const isReportHistoryPage = location.pathname === '/report-history';
+  const isReportGenerationPage = location.pathname === '/report-generation';
+  const isDataAnalysisPage = location.pathname === '/data-analysis';
+  
+  const hideHeader = isAlertManagementPage || isAssignedRoutesPage || isAdminRoutesPage || isLiveMonitorPage || isWasteManagerDashboard || isMonthlyReportsPage || isReportHistoryPage || isReportGenerationPage || isDataAnalysisPage;
+  const hideSideNav = isWasteManagerDashboard || isMonthlyReportsPage || isReportHistoryPage || isReportGenerationPage || isDataAnalysisPage;
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh' }}>
-      {/* Side Navigation - Global component */}
-      <SideNavigation />
+      {/* Side Navigation - Global component (hidden for Waste Manager pages) */}
+      {!hideSideNav && <SideNavigation />}
 
-      <main className="main-content-area">
+      <main className="main-content-area" style={hideSideNav ? { width: '100%', marginLeft: 0, padding: 0 } : {}}>
         {/* Conditional Header rendering */}
         {!hideHeader && <Header />}
 
@@ -142,35 +146,7 @@ function App() {
             } 
           />
 
-          {/* Custom Reports - Protected route */}
-          <Route 
-            path="/custom-reports" 
-            element={
-              <ProtectedRoute>
-                <CustomReports />
-              </ProtectedRoute>
-            } 
-          />
-            {/* Optimized route - Protected route */}
-            <Route
-                path="/Optimize-Route"
-                element={
-                    <ProtectedRoute>
-                        <WasteManagementSystem/>
-                    </ProtectedRoute>
-                }
-            />
-            <Route
-                path="/create-rc"
-                element={
-                    <ProtectedRoute>
-                        <RoutesCollectors/>
-                    </ProtectedRoute>
-                }
-            />
-
-
-            {/* Report History - Protected route */}
+          {/* Report History - Protected route */}
           <Route 
             path="/report-history" 
             element={
@@ -179,6 +155,18 @@ function App() {
               </ProtectedRoute>
             } 
           />
+
+          {/* Report Generation - Protected route */}
+          <Route 
+            path="/report-generation" 
+            element={
+              <ProtectedRoute>
+                <ReportGeneration />
+              </ProtectedRoute>
+            } 
+          />
+
+      
 
           {/* Redirect unknown paths to login */}
           <Route path="*" element={<Navigate to="/login" replace />} />
