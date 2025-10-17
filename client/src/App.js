@@ -40,7 +40,7 @@ import WasteManagerDashboard from './pages/WasteManagerDashboard';
 import MonthlyReports from './pages/MonthlyReports';
 import ReportHistory from './pages/ReportHistory';
 import ReportGeneration from './pages/ReportGeneration';
-import DataAnalysis from './pages/DataAnalysis';
+
 
 
 /**
@@ -166,15 +166,7 @@ function App() {
             } 
           />
 
-          {/* Data Analysis - Protected route */}
-          <Route 
-            path="/data-analysis" 
-            element={
-              <ProtectedRoute>
-                <DataAnalysis />
-              </ProtectedRoute>
-            } 
-          />
+      
 
           {/* Redirect unknown paths to login */}
           <Route path="*" element={<Navigate to="/login" replace />} />

@@ -61,6 +61,8 @@ const ReportHistory = () => {
       
       if (response.data.success) {
         setReports(response.data.data.reports || []);
+      } else {
+        setError(response.data.message || 'Failed to fetch report history');
       }
     } catch (err) {
       console.error('Error fetching report history:', err);
@@ -83,39 +85,56 @@ const ReportHistory = () => {
   const [filteredReports, setFilteredReports] = useState([]);
 
   useEffect(() => {
+    console.log('🔍 Filtering reports...');
+    console.log('Original reports count:', reports.length);
+    console.log('Filter values:', { searchQuery, reportType, generator, dateFilter });
+    
     let filtered = reports;
 
     // Search filter
     if (searchQuery) {
+      console.log('Applying search filter:', searchQuery);
+      const beforeSearch = filtered.length;
       filtered = filtered.filter(report => 
         report._id.toLowerCase().includes(searchQuery.toLowerCase()) ||
         report.reportType.toLowerCase().includes(searchQuery.toLowerCase()) ||
         report.generatedBy?.name?.toLowerCase().includes(searchQuery.toLowerCase())
       );
+      console.log(`Search filter: ${beforeSearch} -> ${filtered.length}`);
     }
 
     // Type filter
-    if (reportType && reportType !== 'All') {
+    if (reportType && reportType !== 'All' && reportType !== 'all') {
+      console.log('Applying type filter:', reportType);
+      const beforeType = filtered.length;
       filtered = filtered.filter(report => 
         report.reportType.toLowerCase() === reportType.toLowerCase()
       );
+      console.log(`Type filter: ${beforeType} -> ${filtered.length}`);
     }
 
     // Generator filter
-    if (generator && generator !== 'All') {
+    if (generator && generator !== 'All' && generator !== 'all') {
+      console.log('Applying generator filter:', generator);
+      const beforeGenerator = filtered.length;
       filtered = filtered.filter(report => 
         report.generatedBy?.name === generator
       );
+      console.log(`Generator filter: ${beforeGenerator} -> ${filtered.length}`);
     }
 
     // Date filter
     if (dateFilter) {
+      console.log('Applying date filter:', dateFilter);
+      const beforeDate = filtered.length;
       filtered = filtered.filter(report => {
         const reportDate = new Date(report.createdAt).toISOString().split('T')[0];
         return reportDate === dateFilter;
       });
+      console.log(`Date filter: ${beforeDate} -> ${filtered.length}`);
     }
 
+    console.log('Final filtered count:', filtered.length);
     setFilteredReports(filtered);
   }, [reports, searchQuery, reportType, generator, dateFilter]);
 
@@ -128,6 +147,27 @@ const ReportHistory = () => {
     setGenerator('all');
     setDateFilter('');
     setCurrentPage(1);
+  };
+
+  /**
+   * Generate a sample monthly report for testing
+   */
+  const generateSampleReport = async () => {
+    try {
+      const currentDate = new Date();
+      const currentMonth = currentDate.getMonth() + 1;
+      const currentYear = currentDate.getFullYear();
+      
+      await api.get(`/reports/monthly?month=${currentMonth}&year=${currentYear}`);
+      
+      // Refresh the report history
+      fetchReportHistory();
+      
+      alert('Sample report generated successfully!');
+    } catch (error) {
+      console.error('Error generating sample report:', error);
+      alert('Failed to generate sample report: ' + (error.response?.data?.message || error.message));
+    }
   };
 
   /**
@@ -213,7 +253,8 @@ const ReportHistory = () => {
     <div style={{ 
       backgroundColor: "#f5f6fa", 
       minHeight: "100vh", 
-      padding: "0"
+      padding: "0",
+      marginLeft: "0"
     }}>
       {/* Breadcrumb */}
       <div style={{
@@ -420,6 +461,27 @@ const ReportHistory = () => {
               >
                 <X size={16} />
                 Clear Filters
+              </button>
+              <button
+                onClick={generateSampleReport}
+                style={{
+                  padding: "0.65rem 1rem",
+                  border: "1px solid #28a745",
+                  borderRadius: "6px",
+                  backgroundColor: "#28a745",
+                  color: "#fff",
+                  cursor: "pointer",
+                  fontSize: "0.85rem",
+                  fontWeight: "600",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "0.5rem",
+                  whiteSpace: "nowrap"
+                }}
+                title="Generate Sample Report"
+              >
+                <RefreshCw size={16} />
+                Generate Sample
               </button>
               <button
                 onClick={() => navigate('/custom-reports')}
@@ -793,9 +855,11 @@ const ReportHistory = () => {
           )}
         </div>
 
+
+
         {/* System Status */}
         <div style={{
-          marginTop: "1.5rem",
+          marginTop: "1rem",
           padding: "0.75rem",
           display: "flex",
           alignItems: "center",

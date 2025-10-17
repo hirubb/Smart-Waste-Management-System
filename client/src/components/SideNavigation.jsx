@@ -100,6 +100,9 @@ const SideNavigation = () => {
                     <Link to="/monthly-reports">Monthly Reports</Link>
                   </li>
                   <li>
+                    <Link to="/report-generation">Report Generation</Link>
+                  </li>
+                  <li>
                     <Link to="/report-history">Report History</Link>
                   </li>
                   <li>
