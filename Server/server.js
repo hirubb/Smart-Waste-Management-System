@@ -41,19 +41,19 @@ app.use((error, req, res, next) => {
 
 // Connect to MongoDB
 mongoose.connect(DB_URL)
-.then(() => console.log("✅ Connected to MongoDB"))
-.catch((err) => console.error("❌ MongoDB connection error:", err));
+    .then(() => console.log("✅ Connected to MongoDB"))
+    .catch((err) => console.error("❌ MongoDB connection error:", err));
 
 
 const authRoutes = require('./routes/authRoutes');
 const collectionRequestRoutes = require("./routes/collectionRequestRoutes");
 const paymentRoutes = require("./routes/paymentRoutes");
 const alertRoutes = require("./routes/alertRoutes");
-
+const reportRoutes = require("./routes/reportRoutes");
+const routeRoutes = require('./routes/Route');
+const collectorRoutes = require('./routes/Collector');
 const dustbinRoutes = require("./routes/dustbinRoutes");
 const notificationRoutes = require("./routes/notificationRoutes");
-
-const reportRoutes = require("./routes/reportRoutes");
 
 
 //Routes
@@ -61,13 +61,11 @@ app.use("/api/auth", authRoutes);
 app.use("/api/collections", collectionRequestRoutes);
 app.use("/api/payments", paymentRoutes);
 app.use("/api/alerts", alertRoutes);
-
+// app.use("/api/reports", reportRoutes);
+app.use('/api/routes', routeRoutes);
+app.use('/api/collectors', collectorRoutes);
 app.use("/api/dustbins", dustbinRoutes);
 app.use("/api/notifications", notificationRoutes);
-
-app.use("/api/reports", reportRoutes);
-
-
 
 
 // Root route
@@ -76,7 +74,7 @@ app.get("/", (req, res) => {
     message: "Legal Aid Backend API",
     version: "1.0.0",
     endpoints: {
-      
+
     }
   });
 });

@@ -42,6 +42,8 @@ import WasteManagerDashboard from './pages/WasteManagerDashboard';
 import MonthlyReports from './pages/MonthlyReports';
 import CustomReports from './pages/CustomReports';
 import ReportHistory from './pages/ReportHistory';
+import WasteManagementSystem from "./pages/WasteManagementSystem";
+import RoutesCollectors from "./pages/Routes&Collectors";
 
 
 /**
@@ -149,8 +151,26 @@ function App() {
               </ProtectedRoute>
             } 
           />
+            {/* Optimized route - Protected route */}
+            <Route
+                path="/Optimize-Route"
+                element={
+                    <ProtectedRoute>
+                        <WasteManagementSystem/>
+                    </ProtectedRoute>
+                }
+            />
+            <Route
+                path="/create-rc"
+                element={
+                    <ProtectedRoute>
+                        <RoutesCollectors/>
+                    </ProtectedRoute>
+                }
+            />
 
-          {/* Report History - Protected route */}
+
+            {/* Report History - Protected route */}
           <Route 
             path="/report-history" 
             element={
