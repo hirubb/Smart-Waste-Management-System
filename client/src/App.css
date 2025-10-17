@@ -109,3 +109,74 @@
   flex-grow: 1; /* Allows the content to fill the remaining space */
   padding: 20px; /* Padding for the content inside the main area */
 }
+
+/* Global Button Width Fixes */
+/* Ensure buttons in flex containers have consistent widths */
+.d-flex .btn.flex-fill {
+  flex: 1 1 0%;
+  min-width: 0;
+  max-width: 150px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Fix for buttons in modal footers */
+.modal-footer.d-flex .btn.flex-fill {
+  flex: 1 1 0%;
+  min-width: 0;
+  max-width: 150px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Fix for buttons in card headers - keep compact */
+.card-header .btn.flex-shrink-0 {
+  flex-shrink: 0;
+  max-width: 130px;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Ensure proper spacing for button groups */
+.d-flex.gap-2 .btn {
+  margin: 0;
+}
+
+/* Fix for buttons that should maintain their natural width */
+.btn:not(.flex-fill):not(.flex-shrink-0) {
+  width: auto;
+  max-width: 140px;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Global button icon and text alignment */
+.btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+}
+
+.btn .fa, .btn svg {
+  flex-shrink: 0;
+}
+
+/* Specific styling for Add Payment Method buttons */
+.add-payment-method-btn {
+  min-width: 200px !important;
+  max-width: none !important;
+  width: auto !important;
+}

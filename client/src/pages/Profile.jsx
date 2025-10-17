@@ -230,18 +230,22 @@ const Profile = () => {
         <Col lg={8} md={12}>
           {/* Profile Details Card */}
           <Card className="border-0 shadow-sm">
-            <Card.Header className="bg-white border-bottom d-flex justify-content-between align-items-center py-3">
-              <h5 className="mb-0 fw-bold">Profile Details</h5>
-              {!isEditing && (
-                <Button 
-                  variant="outline-primary" 
-                  size="sm"
-                  onClick={() => setIsEditing(true)}
-                >
-                  <FaEdit className="me-2" />
-                  Edit Profile
-                </Button>
-              )}
+            <Card.Header className="bg-white border-bottom py-3">
+              <div className="d-flex justify-content-between align-items-center">
+                <h5 className="mb-0 fw-bold">Profile Details</h5>
+                {!isEditing && (
+                  <Button 
+                    variant="outline-primary" 
+                    size="sm"
+                    onClick={() => setIsEditing(true)}
+                    className="flex-shrink-0"
+                    style={{ minWidth: '120px' }}
+                  >
+                    <FaEdit className="me-2" />
+                    Edit Profile
+                  </Button>
+                )}
+              </div>
             </Card.Header>
             <Card.Body className="p-4">
               {success && (
@@ -343,7 +347,7 @@ const Profile = () => {
                 </Form.Group>
 
                 {isEditing && (
-                  <div className="d-flex gap-2 justify-content-end">
+                  <div className="d-flex gap-2">
                     <Button 
                       variant="secondary" 
                       onClick={() => {
@@ -362,6 +366,7 @@ const Profile = () => {
                         setSuccess("");
                       }}
                       disabled={loading}
+                      className="flex-fill"
                     >
                       Cancel
                     </Button>
@@ -369,6 +374,7 @@ const Profile = () => {
                       variant="primary" 
                       type="submit"
                       disabled={loading}
+                      className="flex-fill"
                     >
                       {loading ? (
                         <>
@@ -488,11 +494,12 @@ const Profile = () => {
               />
             </Form.Group>
           </Modal.Body>
-          <Modal.Footer>
+          <Modal.Footer className="d-flex gap-2">
             <Button 
               variant="secondary" 
               onClick={handleClosePasswordModal}
               disabled={passwordLoading}
+              className="flex-fill"
             >
               Cancel
             </Button>
@@ -500,6 +507,7 @@ const Profile = () => {
               variant="primary" 
               type="submit"
               disabled={passwordLoading}
+              className="flex-fill"
             >
               {passwordLoading ? (
                 <>

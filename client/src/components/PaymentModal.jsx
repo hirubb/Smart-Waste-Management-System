@@ -422,7 +422,7 @@ const PaymentModal = ({
                 variant="secondary" 
                 onClick={handleClose} 
                 disabled={loading}
-                className="flex-grow-1"
+                className="flex-fill"
               >
                 Cancel
               </Button>
@@ -430,7 +430,7 @@ const PaymentModal = ({
                 variant="success" 
                 onClick={handlePayment} 
                 disabled={loading}
-                className="flex-grow-1"
+                className="flex-fill"
               >
                 {loading ? (
                   <>

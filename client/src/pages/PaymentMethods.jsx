@@ -430,6 +430,8 @@ const PaymentMethods = () => {
             resetForm();
             setShowAddModal(true);
           }}
+          className="add-payment-method-btn"
+          style={{ minWidth: '200px' }}
         >
           <FaPlus className="me-2" />
           Add Payment Method
@@ -468,6 +470,8 @@ const PaymentMethods = () => {
                 resetForm();
                 setShowAddModal(true);
               }}
+              className="add-payment-method-btn"
+              style={{ minWidth: '250px' }}
             >
               <FaPlus className="me-2" />
               Add Your First Payment Method
