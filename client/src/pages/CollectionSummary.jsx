@@ -90,14 +90,19 @@ const CollectionSummary = () => {
             </tbody>
           </Table>
 
-          <div className="d-flex justify-content-end gap-2 mt-4">
+          <div className="d-flex gap-2 mt-4">
             <Button
               variant="outline-secondary"
               onClick={() => navigate("/schedule")}
+              className="flex-fill"
             >
               Back to Edit
             </Button>
-            <Button variant="success" onClick={handleConfirmBooking}>
+            <Button 
+              variant="success" 
+              onClick={handleConfirmBooking}
+              className="flex-fill"
+            >
               Proceed to Payment
             </Button>
           </div>
