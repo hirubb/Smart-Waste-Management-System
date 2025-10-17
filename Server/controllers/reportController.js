@@ -1002,20 +1002,43 @@ exports.getFilterOptions = async (req, res) => {
  */
 exports.getReportHistory = async (req, res) => {
   try {
+    console.log('📊 Fetching report history...');
+    console.log('User:', JSON.stringify(req.user, null, 2));
+    console.log('Query params:', req.query);
+    console.log('Headers:', req.headers.authorization);
+    
     const { page = 1, limit = 10, reportType, startDate, endDate } = req.query;
     
     // Build query filter
     const filter = {};
     
-    // If user is waste_manager, only show their reports
+    // Check if user exists
+    if (!req.user) {
+      console.error('❌ No user found in request');
+      return res.status(401).json({
+        success: false,
+        message: 'User not authenticated'
+      });
+    }
+    
+    // Get user ID (handle both regular users and hardcoded waste manager)
+    const userId = req.user._id || req.user.id || req.user.userId;
+    console.log('User ID:', userId);
+    console.log('User role:', req.user.role);
+    
+    // If user is waste_manager, only show their reports (unless it's the hardcoded one)
     // If user is authority, show all reports
-    if (req.user.role === 'waste_manager') {
-      filter.generatedBy = req.user.userId;
+    if (req.user.role === 'waste_manager' && userId !== 'waste_manager_001') {
+      filter.generatedBy = userId;
+      console.log('Filtering by generatedBy:', userId);
+    } else {
+      console.log('Showing all reports (authority or hardcoded waste manager)');
     }
     
     // Filter by report type if specified
     if (reportType && reportType !== 'all') {
       filter.reportType = reportType;
+      console.log('Filtering by reportType:', reportType);
     }
     
     // Filter by date range if specified
@@ -1027,7 +1050,10 @@ exports.getReportHistory = async (req, res) => {
       if (endDate) {
         filter.createdAt.$lte = new Date(endDate);
       }
+      console.log('Filtering by date range:', filter.createdAt);
     }
+    
+    console.log('Final filter:', JSON.stringify(filter));
     
     // Calculate pagination
     const skip = (parseInt(page) - 1) * parseInt(limit);
@@ -1040,8 +1066,11 @@ exports.getReportHistory = async (req, res) => {
       .limit(parseInt(limit))
       .lean();
     
+    console.log(`✅ Found ${reports.length} reports`);
+    
     // Get total count for pagination
     const totalReports = await Report.countDocuments(filter);
+    console.log(`Total reports matching filter: ${totalReports}`);
     
     // Format response
     const formattedReports = reports.map(report => ({
@@ -1052,9 +1081,14 @@ exports.getReportHistory = async (req, res) => {
         name: report.generatedBy.name,
         email: report.generatedBy.email,
         role: report.generatedBy.role
-      } : null,
+      } : {
+        id: null,
+        name: 'System',
+        email: 'system@waste.local',
+        role: 'system'
+      },
       period: report.period,
-      status: report.status,
+      status: report.status || 'completed',
       summary: {
         totalCollections: report.data?.totalCollections || 0,
         completedCollections: report.data?.completedCollections || 0,
@@ -1064,6 +1098,8 @@ exports.getReportHistory = async (req, res) => {
       createdAt: report.createdAt,
       updatedAt: report.updatedAt
     }));
+    
+    console.log('✅ Report history fetched successfully');
     
     res.status(200).json({
       success: true,
@@ -1082,7 +1118,8 @@ exports.getReportHistory = async (req, res) => {
     });
     
   } catch (error) {
-    console.error('Error fetching report history:', error);
+    console.error('❌ Error fetching report history:', error);
+    console.error('Error stack:', error.stack);
     res.status(500).json({
       success: false,
       message: 'Failed to fetch report history',

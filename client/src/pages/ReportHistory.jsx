@@ -15,19 +15,17 @@
 
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import Colors from "../constants/colors";
 import { 
-  FileText, 
-  Calendar, 
-  User, 
-  Filter, 
-  ChevronLeft, 
-  ChevronRight,
+  Search,
+  Download,
   Eye,
-  Clock,
-  CheckCircle,
-  AlertCircle,
-  TrendingUp
+  RefreshCw,
+  X,
+  Home,
+  FileText,
+  ChevronRight as ChevronRightIcon,
+  ChevronLeft,
+  ChevronRight
 } from "lucide-react";
 import api from "../services/api";
 
@@ -39,16 +37,12 @@ const ReportHistory = () => {
   
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
-  const [totalReports, setTotalReports] = useState(0);
   
   // Filter state
-  const [filters, setFilters] = useState({
-    reportType: 'all',
-    startDate: '',
-    endDate: '',
-    limit: 10
-  });
+  const [searchQuery, setSearchQuery] = useState('');
+  const [reportType, setReportType] = useState('all');
+  const [generator, setGenerator] = useState('all');
+  const [dateFilter, setDateFilter] = useState('');
 
   /**
    * Fetch report history from API
@@ -59,19 +53,14 @@ const ReportHistory = () => {
       setError(null);
       
       const queryParams = new URLSearchParams({
-        page: currentPage,
-        limit: filters.limit,
-        ...(filters.reportType !== 'all' && { reportType: filters.reportType }),
-        ...(filters.startDate && { startDate: filters.startDate }),
-        ...(filters.endDate && { endDate: filters.endDate })
+        page: 1,
+        limit: 100
       });
       
       const response = await api.get(`/reports/history?${queryParams}`);
       
       if (response.data.success) {
-        setReports(response.data.data.reports);
-        setTotalPages(response.data.data.pagination.totalPages);
-        setTotalReports(response.data.data.pagination.totalReports);
+        setReports(response.data.data.reports || []);
       }
     } catch (err) {
       console.error('Error fetching report history:', err);
@@ -82,35 +71,89 @@ const ReportHistory = () => {
   };
 
   /**
-   * Load reports on component mount and when filters/page change
+   * Load reports on component mount
    */
   useEffect(() => {
     fetchReportHistory();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentPage, filters]);
+  }, []);
 
   /**
-   * Handle filter change
+   * Client-side filtering
    */
-  const handleFilterChange = (key, value) => {
-    setFilters(prev => ({ ...prev, [key]: value }));
-    setCurrentPage(1); // Reset to first page when filters change
-  };
+  const [filteredReports, setFilteredReports] = useState([]);
 
-  /**
-   * Handle page navigation
-   */
-  const handlePageChange = (newPage) => {
-    if (newPage >= 1 && newPage <= totalPages) {
-      setCurrentPage(newPage);
+  useEffect(() => {
+    let filtered = reports;
+
+    // Search filter
+    if (searchQuery) {
+      filtered = filtered.filter(report => 
+        report._id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        report.reportType.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        report.generatedBy?.name?.toLowerCase().includes(searchQuery.toLowerCase())
+      );
     }
+
+    // Type filter
+    if (reportType && reportType !== 'All') {
+      filtered = filtered.filter(report => 
+        report.reportType.toLowerCase() === reportType.toLowerCase()
+      );
+    }
+
+    // Generator filter
+    if (generator && generator !== 'All') {
+      filtered = filtered.filter(report => 
+        report.generatedBy?.name === generator
+      );
+    }
+
+    // Date filter
+    if (dateFilter) {
+      filtered = filtered.filter(report => {
+        const reportDate = new Date(report.createdAt).toISOString().split('T')[0];
+        return reportDate === dateFilter;
+      });
+    }
+
+    setFilteredReports(filtered);
+  }, [reports, searchQuery, reportType, generator, dateFilter]);
+
+  /**
+   * Clear all filters
+   */
+  const clearFilters = () => {
+    setSearchQuery('');
+    setReportType('all');
+    setGenerator('all');
+    setDateFilter('');
+    setCurrentPage(1);
   };
 
   /**
-   * View report details
+   * Action handlers
    */
-  const handleViewReport = (reportId) => {
+  const handleDownload = (reportId, e) => {
+    e.stopPropagation();
+    console.log('Download report:', reportId);
+    // Implement download functionality
+  };
+
+  const handleView = (reportId, e) => {
+    e.stopPropagation();
     navigate(`/report-details/${reportId}`);
+  };
+
+  const handleRetry = (reportId, e) => {
+    e.stopPropagation();
+    console.log('Retry report:', reportId);
+    // Implement retry functionality
+  };
+
+  const handleDelete = (reportId, e) => {
+    e.stopPropagation();
+    console.log('Delete report:', reportId);
+    // Implement delete functionality
   };
 
   /**
@@ -127,18 +170,18 @@ const ReportHistory = () => {
   };
 
   /**
-   * Get status icon and color
+   * Get status style
    */
-  const getStatusDisplay = (status) => {
+  const getStatusStyle = (status) => {
     switch (status) {
       case 'completed':
-        return { icon: <CheckCircle size={18} />, color: '#28a745', text: 'Completed' };
-      case 'generating':
-        return { icon: <Clock size={18} />, color: '#ffc107', text: 'Generating' };
+        return { backgroundColor: '#d4edda', color: '#155724' };
+      case 'processing':
+        return { backgroundColor: '#fff3cd', color: '#856404' };
       case 'failed':
-        return { icon: <AlertCircle size={18} />, color: '#dc3545', text: 'Failed' };
+        return { backgroundColor: '#f8d7da', color: '#721c24' };
       default:
-        return { icon: <Clock size={18} />, color: Colors.textSecondary, text: status };
+        return { backgroundColor: '#d4edda', color: '#155724' };
     }
   };
 
@@ -157,402 +200,627 @@ const ReportHistory = () => {
     return typeNames[type] || type;
   };
 
+  // Pagination calculations
+  const indexOfLastItem = currentPage * 10;
+  const indexOfFirstItem = indexOfLastItem - 10;
+  const currentReports = filteredReports.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(filteredReports.length / 10);
+
+  // Get unique generators for filter
+  const uniqueGenerators = ['All', ...new Set(reports.map(r => r.generatedBy?.name).filter(Boolean))];
+
   return (
-    <div style={{ backgroundColor: Colors.background, minHeight: "100vh", padding: "2rem" }}>
-      {/* Header */}
-      <header
-        style={{
-          backgroundColor: Colors.header,
-          color: "#fff",
-          padding: "1.5rem 2rem",
-          borderRadius: "12px",
-          marginBottom: "2rem",
-          boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
-        }}
-      >
-        <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
-          <FileText size={32} />
-          <div>
-            <h1 style={{ margin: 0, fontSize: "2rem" }}>Report History</h1>
-            <p style={{ margin: "0.5rem 0 0 0", opacity: 0.9 }}>
-              View and manage all generated reports
-            </p>
-          </div>
-        </div>
-      </header>
+    <div style={{ 
+      backgroundColor: "#f5f6fa", 
+      minHeight: "100vh", 
+      padding: "0"
+    }}>
+      {/* Breadcrumb */}
+      <div style={{
+        backgroundColor: "#fff",
+        padding: "1rem 2rem",
+        borderBottom: "1px solid #e0e0e0",
+        display: "flex",
+        alignItems: "center",
+        gap: "0.5rem",
+        fontSize: "0.9rem",
+        color: "#666"
+      }}>
+        <Home size={16} />
+        <span>Dashboard</span>
+        <ChevronRightIcon size={16} />
+        <FileText size={16} />
+        <span>Reports</span>
+        <ChevronRightIcon size={16} />
+        <span style={{ color: "#333", fontWeight: "600" }}>Report History</span>
+      </div>
 
-      {/* Filters Section */}
-      <div
-        style={{
-          backgroundColor: Colors.card,
+      {/* Main Content */}
+      <div style={{ padding: "2rem" }}>
+        {/* Header */}
+        <div style={{ marginBottom: "2rem" }}>
+          <h1 style={{ 
+            margin: "0 0 0.5rem 0", 
+            fontSize: "1.8rem", 
+            color: "#1a1a1a",
+            fontWeight: "700"
+          }}>
+            Report History
+          </h1>
+          <p style={{ 
+            margin: 0, 
+            color: "#666", 
+            fontSize: "0.95rem" 
+          }}>
+            A comprehensive record of all previously generated reports. Search, filter, and access your documents with ease.
+          </p>
+        </div>
+
+        {/* Search and Filter Bar */}
+        <div style={{
+          backgroundColor: "#fff",
           padding: "1.5rem",
-          borderRadius: "12px",
-          marginBottom: "2rem",
-          boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
-        }}
-      >
-        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "1rem" }}>
-          <Filter size={20} color={Colors.primaryButton} />
-          <h3 style={{ margin: 0, color: Colors.textPrimary }}>Filters</h3>
-        </div>
-        
-        <div
-          style={{
+          borderRadius: "8px",
+          marginBottom: "1.5rem",
+          boxShadow: "0 1px 3px rgba(0,0,0,0.1)"
+        }}>
+          <div style={{
             display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))",
+            gridTemplateColumns: "2fr 1fr 1fr 1fr auto",
             gap: "1rem",
-          }}
-        >
-          {/* Report Type Filter */}
-          <div>
-            <label style={{ display: "block", marginBottom: "0.5rem", color: Colors.textPrimary, fontWeight: "600" }}>
-              Report Type
-            </label>
-            <select
-              value={filters.reportType}
-              onChange={(e) => handleFilterChange('reportType', e.target.value)}
-              style={{
-                width: "100%",
-                padding: "0.75rem",
-                borderRadius: "8px",
-                border: `1px solid ${Colors.border}`,
-                backgroundColor: "#fff",
-                color: Colors.textPrimary,
-                cursor: "pointer"
-              }}
-            >
-              <option value="all">All Types</option>
-              <option value="monthly">Monthly Report</option>
-              <option value="custom">Custom Report</option>
-              <option value="weekly">Weekly Report</option>
-              <option value="yearly">Yearly Report</option>
-              <option value="collector-performance">Collector Performance</option>
-              <option value="area-analysis">Area Analysis</option>
-            </select>
-          </div>
+            alignItems: "end"
+          }}>
+            {/* Search Input */}
+            <div>
+              <label style={{
+                display: "block",
+                marginBottom: "0.5rem",
+                fontSize: "0.85rem",
+                color: "#666",
+                fontWeight: "500"
+              }}>
+                Search Reports
+              </label>
+              <div style={{ position: "relative" }}>
+                <Search 
+                  size={18} 
+                  style={{ 
+                    position: "absolute", 
+                    left: "12px", 
+                    top: "50%", 
+                    transform: "translateY(-50%)",
+                    color: "#999"
+                  }} 
+                />
+                <input
+                  type="text"
+                  placeholder="Search by Report ID, Type, Generator..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  style={{
+                    width: "100%",
+                    padding: "0.65rem 0.75rem 0.65rem 2.5rem",
+                    border: "1px solid #e0e0e0",
+                    borderRadius: "6px",
+                    fontSize: "0.9rem",
+                    outline: "none"
+                  }}
+                />
+              </div>
+            </div>
 
-          {/* Start Date Filter */}
-          <div>
-            <label style={{ display: "block", marginBottom: "0.5rem", color: Colors.textPrimary, fontWeight: "600" }}>
-              From Date
-            </label>
-            <input
-              type="date"
-              value={filters.startDate}
-              onChange={(e) => handleFilterChange('startDate', e.target.value)}
-              style={{
-                width: "100%",
-                padding: "0.75rem",
-                borderRadius: "8px",
-                border: `1px solid ${Colors.border}`,
-                backgroundColor: "#fff",
-                color: Colors.textPrimary
-              }}
-            />
-          </div>
-
-          {/* End Date Filter */}
-          <div>
-            <label style={{ display: "block", marginBottom: "0.5rem", color: Colors.textPrimary, fontWeight: "600" }}>
-              To Date
-            </label>
-            <input
-              type="date"
-              value={filters.endDate}
-              onChange={(e) => handleFilterChange('endDate', e.target.value)}
-              style={{
-                width: "100%",
-                padding: "0.75rem",
-                borderRadius: "8px",
-                border: `1px solid ${Colors.border}`,
-                backgroundColor: "#fff",
-                color: Colors.textPrimary
-              }}
-            />
-          </div>
-
-          {/* Items per page */}
-          <div>
-            <label style={{ display: "block", marginBottom: "0.5rem", color: Colors.textPrimary, fontWeight: "600" }}>
-              Per Page
-            </label>
-            <select
-              value={filters.limit}
-              onChange={(e) => handleFilterChange('limit', parseInt(e.target.value))}
-              style={{
-                width: "100%",
-                padding: "0.75rem",
-                borderRadius: "8px",
-                border: `1px solid ${Colors.border}`,
-                backgroundColor: "#fff",
-                color: Colors.textPrimary,
-                cursor: "pointer"
-              }}
-            >
-              <option value={5}>5 reports</option>
-              <option value={10}>10 reports</option>
-              <option value={20}>20 reports</option>
-              <option value={50}>50 reports</option>
-            </select>
-          </div>
-        </div>
-      </div>
-
-      {/* Stats Summary */}
-      <div
-        style={{
-          backgroundColor: Colors.card,
-          padding: "1rem 1.5rem",
-          borderRadius: "12px",
-          marginBottom: "2rem",
-          boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          flexWrap: "wrap",
-          gap: "1rem"
-        }}
-      >
-        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-          <TrendingUp size={20} color={Colors.primaryButton} />
-          <span style={{ color: Colors.textPrimary, fontWeight: "600" }}>
-            Total Reports: {totalReports}
-          </span>
-        </div>
-        <div style={{ color: Colors.textSecondary, fontSize: "0.9rem" }}>
-          Showing page {currentPage} of {totalPages}
-        </div>
-      </div>
-
-      {/* Reports List */}
-      {loading ? (
-        <div style={{ textAlign: "center", padding: "3rem", color: Colors.textSecondary }}>
-          <Clock size={48} style={{ marginBottom: "1rem", animation: "spin 2s linear infinite" }} />
-          <p>Loading reports...</p>
-        </div>
-      ) : error ? (
-        <div
-          style={{
-            backgroundColor: "#fff3cd",
-            border: "1px solid #ffc107",
-            padding: "1.5rem",
-            borderRadius: "12px",
-            color: "#856404",
-            textAlign: "center"
-          }}
-        >
-          <AlertCircle size={32} style={{ marginBottom: "0.5rem" }} />
-          <p style={{ margin: 0 }}>{error}</p>
-        </div>
-      ) : reports.length === 0 ? (
-        <div
-          style={{
-            backgroundColor: Colors.card,
-            padding: "3rem",
-            borderRadius: "12px",
-            textAlign: "center",
-            color: Colors.textSecondary
-          }}
-        >
-          <FileText size={64} style={{ marginBottom: "1rem", opacity: 0.5 }} />
-          <h3 style={{ color: Colors.textPrimary }}>No Reports Found</h3>
-          <p>Try adjusting your filters or generate a new report.</p>
-        </div>
-      ) : (
-        <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-          {reports.map((report) => {
-            const statusDisplay = getStatusDisplay(report.status);
-            
-            return (
-              <div
-                key={report._id}
+            {/* Report Type Filter */}
+            <div>
+              <label style={{
+                display: "block",
+                marginBottom: "0.5rem",
+                fontSize: "0.85rem",
+                color: "#666",
+                fontWeight: "500"
+              }}>
+                Report Type
+              </label>
+              <select
+                value={reportType}
+                onChange={(e) => setReportType(e.target.value)}
                 style={{
-                  backgroundColor: Colors.card,
-                  padding: "1.5rem",
-                  borderRadius: "12px",
-                  boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
-                  transition: "transform 0.2s, box-shadow 0.2s",
+                  width: "100%",
+                  padding: "0.65rem 0.75rem",
+                  border: "1px solid #e0e0e0",
+                  borderRadius: "6px",
+                  fontSize: "0.9rem",
+                  backgroundColor: "#fff",
+                  cursor: "pointer",
+                  outline: "none"
+                }}
+              >
+                <option>All</option>
+                <option>Monthly</option>
+                <option>Weekly</option>
+                <option>Daily</option>
+                <option>Custom</option>
+              </select>
+            </div>
+
+            {/* Generator Filter */}
+            <div>
+              <label style={{
+                display: "block",
+                marginBottom: "0.5rem",
+                fontSize: "0.85rem",
+                color: "#666",
+                fontWeight: "500"
+              }}>
+                Generator
+              </label>
+              <select
+                value={generator}
+                onChange={(e) => setGenerator(e.target.value)}
+                style={{
+                  width: "100%",
+                  padding: "0.65rem 0.75rem",
+                  border: "1px solid #e0e0e0",
+                  borderRadius: "6px",
+                  fontSize: "0.9rem",
+                  backgroundColor: "#fff",
+                  cursor: "pointer",
+                  outline: "none"
+                }}
+              >
+                {uniqueGenerators.map(gen => (
+                  <option key={gen}>{gen}</option>
+                ))}
+              </select>
+            </div>
+
+            {/* Date Filter */}
+            <div>
+              <label style={{
+                display: "block",
+                marginBottom: "0.5rem",
+                fontSize: "0.85rem",
+                color: "#666",
+                fontWeight: "500"
+              }}>
+                Date
+              </label>
+              <input
+                type="date"
+                value={dateFilter}
+                onChange={(e) => setDateFilter(e.target.value)}
+                style={{
+                  width: "100%",
+                  padding: "0.65rem 0.75rem",
+                  border: "1px solid #e0e0e0",
+                  borderRadius: "6px",
+                  fontSize: "0.9rem",
+                  outline: "none"
+                }}
+              />
+            </div>
+
+            {/* Clear Filters & Generate Button */}
+            <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
+              <button
+                onClick={clearFilters}
+                style={{
+                  padding: "0.65rem 1rem",
+                  border: "1px solid #e0e0e0",
+                  borderRadius: "6px",
+                  backgroundColor: "#fff",
+                  color: "#666",
+                  cursor: "pointer",
+                  fontSize: "0.85rem",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "0.5rem",
+                  whiteSpace: "nowrap"
+                }}
+                title="Clear Filters"
+              >
+                <X size={16} />
+                Clear Filters
+              </button>
+              <button
+                onClick={() => navigate('/custom-reports')}
+                style={{
+                  padding: "0.65rem 1.25rem",
+                  border: "none",
+                  borderRadius: "6px",
+                  backgroundColor: "#2c3e50",
+                  color: "#fff",
+                  cursor: "pointer",
+                  fontSize: "0.85rem",
+                  fontWeight: "600",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "0.5rem",
+                  whiteSpace: "nowrap"
+                }}
+              >
+                <FileText size={16} />
+                Generate New Report
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Table */}
+        <div style={{
+          backgroundColor: "#fff",
+          borderRadius: "8px",
+          boxShadow: "0 1px 3px rgba(0,0,0,0.1)",
+          overflow: "hidden"
+        }}>
+          {loading ? (
+            <div style={{ 
+              padding: "3rem", 
+              textAlign: "center", 
+              color: "#666" 
+            }}>
+              <RefreshCw size={32} style={{ animation: "spin 1s linear infinite" }} />
+              <p style={{ marginTop: "1rem" }}>Loading reports...</p>
+            </div>
+          ) : error ? (
+            <div style={{ 
+              padding: "3rem", 
+              textAlign: "center", 
+              color: "#dc3545" 
+            }}>
+              <p>{error}</p>
+              <button
+                onClick={fetchReportHistory}
+                style={{
+                  marginTop: "1rem",
+                  padding: "0.5rem 1rem",
+                  border: "none",
+                  borderRadius: "6px",
+                  backgroundColor: "#2c3e50",
+                  color: "#fff",
                   cursor: "pointer"
                 }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = "translateY(-2px)";
-                  e.currentTarget.style.boxShadow = "0 6px 16px rgba(0,0,0,0.15)";
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = "translateY(0)";
-                  e.currentTarget.style.boxShadow = "0 4px 12px rgba(0,0,0,0.1)";
-                }}
-                onClick={() => handleViewReport(report._id)}
               >
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "start", flexWrap: "wrap", gap: "1rem" }}>
-                  {/* Left Section */}
-                  <div style={{ flex: 1, minWidth: "250px" }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "0.5rem" }}>
-                      <FileText size={24} color={Colors.primaryButton} />
-                      <h3 style={{ margin: 0, color: Colors.textPrimary, fontSize: "1.2rem" }}>
-                        {getReportTypeName(report.reportType)}
-                      </h3>
-                    </div>
-                    
-                    {report.period && (
-                      <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "0.5rem" }}>
-                        <Calendar size={16} color={Colors.textSecondary} />
-                        <span style={{ color: Colors.textSecondary, fontSize: "0.9rem" }}>
-                          {report.period.month && report.period.year 
-                            ? `${new Date(report.period.year, report.period.month - 1).toLocaleString('default', { month: 'long' })} ${report.period.year}`
-                            : `${new Date(report.period.startDate).toLocaleDateString()} - ${new Date(report.period.endDate).toLocaleDateString()}`
-                          }
-                        </span>
-                      </div>
-                    )}
-                    
-                    {report.generatedBy && (
-                      <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
-                        <User size={16} color={Colors.textSecondary} />
-                        <span style={{ color: Colors.textSecondary, fontSize: "0.9rem" }}>
-                          Generated by: {report.generatedBy.name}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Middle Section - Stats */}
-                  <div style={{ display: "flex", gap: "2rem", flexWrap: "wrap" }}>
-                    <div>
-                      <p style={{ margin: 0, color: Colors.textSecondary, fontSize: "0.85rem" }}>Collections</p>
-                      <p style={{ margin: "0.25rem 0 0 0", color: Colors.textPrimary, fontSize: "1.4rem", fontWeight: "700" }}>
-                        {report.summary.totalCollections}
-                      </p>
-                    </div>
-                    <div>
-                      <p style={{ margin: 0, color: Colors.textSecondary, fontSize: "0.85rem" }}>Completed</p>
-                      <p style={{ margin: "0.25rem 0 0 0", color: "#28a745", fontSize: "1.4rem", fontWeight: "700" }}>
-                        {report.summary.completedCollections}
-                      </p>
-                    </div>
-                    <div>
-                      <p style={{ margin: 0, color: Colors.textSecondary, fontSize: "0.85rem" }}>Waste (kg)</p>
-                      <p style={{ margin: "0.25rem 0 0 0", color: Colors.textPrimary, fontSize: "1.4rem", fontWeight: "700" }}>
-                        {report.summary.totalWasteCollected.toFixed(0)}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Right Section - Status & Actions */}
-                  <div style={{ textAlign: "right" }}>
-                    <div
-                      style={{
-                        display: "inline-flex",
-                        alignItems: "center",
-                        gap: "0.5rem",
-                        padding: "0.5rem 1rem",
-                        borderRadius: "20px",
-                        backgroundColor: statusDisplay.color + "20",
-                        color: statusDisplay.color,
-                        marginBottom: "0.75rem"
+                Retry
+              </button>
+            </div>
+          ) : currentReports.length === 0 ? (
+            <div style={{ 
+              padding: "3rem", 
+              textAlign: "center", 
+              color: "#666" 
+            }}>
+              <FileText size={48} style={{ opacity: 0.3, marginBottom: "1rem" }} />
+              <p>No reports found</p>
+            </div>
+          ) : (
+            <>
+              <table style={{ 
+                width: "100%", 
+                borderCollapse: "collapse",
+                fontSize: "0.9rem"
+              }}>
+                <thead>
+                  <tr style={{ 
+                    backgroundColor: "#f8f9fa",
+                    borderBottom: "2px solid #e0e0e0"
+                  }}>
+                    <th style={{ 
+                      padding: "1rem", 
+                      textAlign: "left", 
+                      fontWeight: "600",
+                      color: "#666",
+                      fontSize: "0.85rem"
+                    }}>
+                      Report ID
+                    </th>
+                    <th style={{ 
+                      padding: "1rem", 
+                      textAlign: "left", 
+                      fontWeight: "600",
+                      color: "#666",
+                      fontSize: "0.85rem"
+                    }}>
+                      Type
+                    </th>
+                    <th style={{ 
+                      padding: "1rem", 
+                      textAlign: "left", 
+                      fontWeight: "600",
+                      color: "#666",
+                      fontSize: "0.85rem"
+                    }}>
+                      Generator
+                    </th>
+                    <th style={{ 
+                      padding: "1rem", 
+                      textAlign: "left", 
+                      fontWeight: "600",
+                      color: "#666",
+                      fontSize: "0.85rem"
+                    }}>
+                      Date
+                    </th>
+                    <th style={{ 
+                      padding: "1rem", 
+                      textAlign: "left", 
+                      fontWeight: "600",
+                      color: "#666",
+                      fontSize: "0.85rem"
+                    }}>
+                      Status
+                    </th>
+                    <th style={{ 
+                      padding: "1rem", 
+                      textAlign: "center", 
+                      fontWeight: "600",
+                      color: "#666",
+                      fontSize: "0.85rem"
+                    }}>
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {currentReports.map((report, index) => (
+                    <tr 
+                      key={report._id}
+                      style={{ 
+                        borderBottom: "1px solid #f0f0f0",
+                        backgroundColor: index % 2 === 0 ? "#fff" : "#fafbfc",
+                        transition: "background-color 0.2s"
                       }}
+                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "#f8f9fa"}
+                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = index % 2 === 0 ? "#fff" : "#fafbfc"}
                     >
-                      {statusDisplay.icon}
-                      <span style={{ fontWeight: "600", fontSize: "0.9rem" }}>{statusDisplay.text}</span>
-                    </div>
-                    
-                    <p style={{ margin: "0.5rem 0", color: Colors.textSecondary, fontSize: "0.85rem" }}>
-                      {formatDate(report.createdAt)}
-                    </p>
-                    
-                    <div style={{ display: "flex", gap: "0.5rem", justifyContent: "flex-end", marginTop: "0.75rem" }}>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleViewReport(report._id);
-                        }}
-                        style={{
-                          padding: "0.5rem 1rem",
-                          borderRadius: "8px",
-                          border: "none",
-                          backgroundColor: Colors.primaryButton,
-                          color: "#fff",
-                          cursor: "pointer",
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "0.5rem",
-                          fontWeight: "600",
-                          transition: "opacity 0.2s"
-                        }}
-                        onMouseEnter={(e) => e.target.style.opacity = "0.9"}
-                        onMouseLeave={(e) => e.target.style.opacity = "1"}
-                      >
-                        <Eye size={16} />
-                        View Details
-                      </button>
-                    </div>
-                  </div>
+                      <td style={{ padding: "1rem", color: "#333", fontFamily: "monospace" }}>
+                        {`REP-${report._id.slice(-8).toUpperCase()}`}
+                      </td>
+                      <td style={{ padding: "1rem", color: "#333" }}>
+                        {getReportTypeName(report.reportType)}
+                      </td>
+                      <td style={{ padding: "1rem" }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                          <div style={{
+                            width: "32px",
+                            height: "32px",
+                            borderRadius: "50%",
+                            backgroundColor: report.generatedBy?.name === 'System' ? "#6c757d" : "#2c3e50",
+                            color: "#fff",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            fontSize: "0.75rem",
+                            fontWeight: "600"
+                          }}>
+                            {report.generatedBy?.name?.substring(0, 2).toUpperCase() || 'SY'}
+                          </div>
+                          <span style={{ color: "#333" }}>
+                            {report.generatedBy?.name || 'System'}
+                          </span>
+                        </div>
+                      </td>
+                      <td style={{ padding: "1rem", color: "#666" }}>
+                        {formatDate(report.createdAt)}
+                      </td>
+                      <td style={{ padding: "1rem" }}>
+                        <span style={{
+                          ...getStatusStyle(report.status),
+                          padding: "0.35rem 0.75rem",
+                          borderRadius: "12px",
+                          fontSize: "0.8rem",
+                          fontWeight: "500",
+                          display: "inline-block"
+                        }}>
+                          {report.status?.charAt(0).toUpperCase() + report.status?.slice(1) || 'Completed'}
+                        </span>
+                      </td>
+                      <td style={{ padding: "1rem" }}>
+                        <div style={{ 
+                          display: "flex", 
+                          gap: "0.5rem", 
+                          justifyContent: "center",
+                          alignItems: "center"
+                        }}>
+                          <button
+                            onClick={(e) => handleDownload(report._id, e)}
+                            style={{
+                              padding: "0.5rem",
+                              border: "none",
+                              borderRadius: "6px",
+                              backgroundColor: "transparent",
+                              color: "#666",
+                              cursor: "pointer",
+                              display: "flex",
+                              alignItems: "center",
+                              transition: "background-color 0.2s"
+                            }}
+                            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "#f0f0f0"}
+                            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "transparent"}
+                            title="Download"
+                          >
+                            <Download size={18} />
+                          </button>
+                          <button
+                            onClick={(e) => handleView(report._id, e)}
+                            style={{
+                              padding: "0.5rem",
+                              border: "none",
+                              borderRadius: "6px",
+                              backgroundColor: "transparent",
+                              color: "#666",
+                              cursor: "pointer",
+                              display: "flex",
+                              alignItems: "center",
+                              transition: "background-color 0.2s"
+                            }}
+                            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "#f0f0f0"}
+                            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "transparent"}
+                            title="View"
+                          >
+                            <Eye size={18} />
+                          </button>
+                          {report.status === 'failed' && (
+                            <>
+                              <button
+                                onClick={(e) => handleRetry(report._id, e)}
+                                style={{
+                                  padding: "0.5rem",
+                                  border: "none",
+                                  borderRadius: "6px",
+                                  backgroundColor: "transparent",
+                                  color: "#17a2b8",
+                                  cursor: "pointer",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  transition: "background-color 0.2s"
+                                }}
+                                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "#e8f4f8"}
+                                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "transparent"}
+                                title="Retry"
+                              >
+                                <RefreshCw size={18} />
+                              </button>
+                              <button
+                                onClick={(e) => handleDelete(report._id, e)}
+                                style={{
+                                  padding: "0.5rem",
+                                  border: "none",
+                                  borderRadius: "6px",
+                                  backgroundColor: "transparent",
+                                  color: "#dc3545",
+                                  cursor: "pointer",
+                                  display: "flex",
+                                  alignItems: "center",
+                                  transition: "background-color 0.2s"
+                                }}
+                                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "#f8d7da"}
+                                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "transparent"}
+                                title="Delete"
+                              >
+                                <X size={18} />
+                              </button>
+                            </>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <div style={{
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  gap: "0.5rem",
+                  padding: "1.5rem",
+                  borderTop: "1px solid #e0e0e0",
+                  backgroundColor: "#f8f9fa"
+                }}>
+                  <button
+                    onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                    disabled={currentPage === 1}
+                    style={{
+                      padding: "0.5rem",
+                      border: "1px solid #e0e0e0",
+                      borderRadius: "6px",
+                      backgroundColor: currentPage === 1 ? "#f0f0f0" : "#fff",
+                      color: currentPage === 1 ? "#ccc" : "#333",
+                      cursor: currentPage === 1 ? "not-allowed" : "pointer",
+                      display: "flex",
+                      alignItems: "center"
+                    }}
+                  >
+                    <ChevronLeft size={18} />
+                  </button>
+
+                  {[...Array(totalPages)].map((_, index) => {
+                    const pageNum = index + 1;
+                    // Show first page, last page, current page, and pages around current
+                    if (
+                      pageNum === 1 ||
+                      pageNum === totalPages ||
+                      (pageNum >= currentPage - 1 && pageNum <= currentPage + 1)
+                    ) {
+                      return (
+                        <button
+                          key={pageNum}
+                          onClick={() => setCurrentPage(pageNum)}
+                          style={{
+                            padding: "0.5rem 0.75rem",
+                            border: "1px solid #e0e0e0",
+                            borderRadius: "6px",
+                            backgroundColor: currentPage === pageNum ? "#2c3e50" : "#fff",
+                            color: currentPage === pageNum ? "#fff" : "#333",
+                            cursor: "pointer",
+                            fontWeight: currentPage === pageNum ? "600" : "normal",
+                            minWidth: "40px"
+                          }}
+                        >
+                          {pageNum}
+                        </button>
+                      );
+                    } else if (
+                      pageNum === currentPage - 2 ||
+                      pageNum === currentPage + 2
+                    ) {
+                      return <span key={pageNum} style={{ color: "#999" }}>...</span>;
+                    }
+                    return null;
+                  })}
+
+                  <button
+                    onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
+                    disabled={currentPage === totalPages}
+                    style={{
+                      padding: "0.5rem",
+                      border: "1px solid #e0e0e0",
+                      borderRadius: "6px",
+                      backgroundColor: currentPage === totalPages ? "#f0f0f0" : "#fff",
+                      color: currentPage === totalPages ? "#ccc" : "#333",
+                      cursor: currentPage === totalPages ? "not-allowed" : "pointer",
+                      display: "flex",
+                      alignItems: "center"
+                    }}
+                  >
+                    <ChevronRight size={18} />
+                  </button>
                 </div>
-              </div>
-            );
-          })}
+              )}
+            </>
+          )}
         </div>
-      )}
 
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            gap: "1rem",
-            marginTop: "2rem",
-            padding: "1rem",
-            backgroundColor: Colors.card,
-            borderRadius: "12px"
-          }}
-        >
-          <button
-            onClick={() => handlePageChange(currentPage - 1)}
-            disabled={currentPage === 1}
-            style={{
-              padding: "0.75rem 1rem",
-              borderRadius: "8px",
-              border: "none",
-              backgroundColor: currentPage === 1 ? Colors.border : Colors.primaryButton,
-              color: "#fff",
-              cursor: currentPage === 1 ? "not-allowed" : "pointer",
-              display: "flex",
-              alignItems: "center",
-              gap: "0.5rem",
-              fontWeight: "600"
-            }}
-          >
-            <ChevronLeft size={18} />
-            Previous
-          </button>
-
-          <span style={{ color: Colors.textPrimary, fontWeight: "600" }}>
-            Page {currentPage} of {totalPages}
-          </span>
-
-          <button
-            onClick={() => handlePageChange(currentPage + 1)}
-            disabled={currentPage === totalPages}
-            style={{
-              padding: "0.75rem 1rem",
-              borderRadius: "8px",
-              border: "none",
-              backgroundColor: currentPage === totalPages ? Colors.border : Colors.primaryButton,
-              color: "#fff",
-              cursor: currentPage === totalPages ? "not-allowed" : "pointer",
-              display: "flex",
-              alignItems: "center",
-              gap: "0.5rem",
-              fontWeight: "600"
-            }}
-          >
-            Next
-            <ChevronRight size={18} />
-          </button>
+        {/* System Status */}
+        <div style={{
+          marginTop: "1.5rem",
+          padding: "0.75rem",
+          display: "flex",
+          alignItems: "center",
+          gap: "0.5rem",
+          fontSize: "0.85rem",
+          color: "#666"
+        }}>
+          <div style={{
+            width: "8px",
+            height: "8px",
+            borderRadius: "50%",
+            backgroundColor: "#28a745"
+          }} />
+          <span>System Online</span>
+          <span style={{ marginLeft: "auto" }}>Last updated: 2 min ago</span>
         </div>
-      )}
+      </div>
+
+      {/* Add spin animation for loading icon */}
+      <style>{`
+        @keyframes spin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+      `}</style>
     </div>
   );
 };
