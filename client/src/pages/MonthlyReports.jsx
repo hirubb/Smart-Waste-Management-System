@@ -15,7 +15,7 @@
  * @since 2025-10-15
  */
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { 
   FileText, 
   TrendingUp, 
@@ -25,8 +25,14 @@ import {
   Download,
   Calendar,
   BarChart3,
-  Clock
+  Clock,
+  FileSpreadsheet,
+  FileDown,
+  ChevronDown
 } from "lucide-react";
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
+import * as XLSX from 'xlsx';
 import API from "../services/api";
 import Colors from "../constants/colors";
 import "../App.css";
@@ -45,6 +51,26 @@ const MonthlyReports = () => {
   const [reportData, setReportData] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [showExportMenu, setShowExportMenu] = useState(false);
+
+  // Ref for export menu
+  const exportMenuRef = useRef(null);
+
+  /**
+   * Handle click outside to close export menu
+   */
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (exportMenuRef.current && !exportMenuRef.current.contains(event.target)) {
+        setShowExportMenu(false);
+      }
+    };
+
+    if (showExportMenu) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }
+  }, [showExportMenu]);
 
   /**
    * Generates monthly report from API
@@ -76,13 +102,243 @@ const MonthlyReports = () => {
   };
 
   /**
-   * Exports report data
-   * Future enhancement: Generate PDF/Excel
+   * Exports report as PDF
    */
-  const handleExportReport = () => {
+  const handleExportPDF = () => {
     if (!reportData) return;
 
-    // Convert report to JSON and download
+    const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.width;
+    
+    // Title
+    doc.setFontSize(20);
+    doc.setTextColor(44, 62, 80);
+    doc.text('Monthly Waste Collection Report', pageWidth / 2, 20, { align: 'center' });
+    
+    // Subtitle
+    doc.setFontSize(12);
+    doc.setTextColor(100, 100, 100);
+    doc.text(`${reportData.period.monthName} ${reportData.period.year}`, pageWidth / 2, 28, { align: 'center' });
+    
+    // Summary Section
+    doc.setFontSize(14);
+    doc.setTextColor(44, 62, 80);
+    doc.text('Summary Statistics', 14, 40);
+    
+    doc.setFontSize(10);
+    doc.setTextColor(60, 60, 60);
+    let yPos = 48;
+    doc.text(`Total Collections: ${reportData.summary.totalCollections}`, 14, yPos);
+    yPos += 6;
+    doc.text(`Completed Collections: ${reportData.summary.completedCollections}`, 14, yPos);
+    yPos += 6;
+    doc.text(`Total Waste Collected: ${reportData.summary.totalWasteCollected} kg`, 14, yPos);
+    yPos += 6;
+    doc.text(`Revenue Generated: Rs. ${reportData.summary.revenueGenerated}`, 14, yPos);
+    yPos += 6;
+    doc.text(`Completion Rate: ${reportData.trends.completionRate}%`, 14, yPos);
+    yPos += 12;
+
+    // Waste by Type Table
+    doc.setFontSize(14);
+    doc.setTextColor(44, 62, 80);
+    doc.text('Waste Collection by Type', 14, yPos);
+    yPos += 8;
+
+    const wasteTypeData = Object.entries(reportData.wasteByType).map(([type, data]) => [
+      type.charAt(0).toUpperCase() + type.slice(1),
+      data.count,
+      `${data.totalWeight} kg`,
+      `${data.percentage}%`
+    ]);
+
+    doc.autoTable({
+      startY: yPos,
+      head: [['Waste Type', 'Collections', 'Total Weight', 'Percentage']],
+      body: wasteTypeData,
+      theme: 'grid',
+      headStyles: { fillColor: [102, 126, 234], textColor: 255 },
+      styles: { fontSize: 9 }
+    });
+
+    yPos = doc.lastAutoTable.finalY + 12;
+
+    // High Waste Areas Table
+    if (yPos > 240) {
+      doc.addPage();
+      yPos = 20;
+    }
+
+    doc.setFontSize(14);
+    doc.setTextColor(44, 62, 80);
+    doc.text('High Waste Generation Areas', 14, yPos);
+    yPos += 8;
+
+    const areaData = reportData.highWasteAreas.slice(0, 10).map((area, index) => [
+      `#${index + 1}`,
+      area.area,
+      area.totalCollections,
+      `${area.wasteVolume} kg`,
+      area.dominantWasteType.charAt(0).toUpperCase() + area.dominantWasteType.slice(1)
+    ]);
+
+    doc.autoTable({
+      startY: yPos,
+      head: [['Rank', 'Area', 'Collections', 'Weight', 'Dominant Type']],
+      body: areaData,
+      theme: 'grid',
+      headStyles: { fillColor: [102, 126, 234], textColor: 255 },
+      styles: { fontSize: 9 }
+    });
+
+    yPos = doc.lastAutoTable.finalY + 12;
+
+    // Recommendations
+    if (yPos > 220) {
+      doc.addPage();
+      yPos = 20;
+    }
+
+    doc.setFontSize(14);
+    doc.setTextColor(44, 62, 80);
+    doc.text('Recommendations', 14, yPos);
+    yPos += 8;
+
+    reportData.recommendations.forEach((rec, index) => {
+      if (yPos > 270) {
+        doc.addPage();
+        yPos = 20;
+      }
+      
+      doc.setFontSize(10);
+      doc.setTextColor(100, 100, 100);
+      doc.text(`${index + 1}. ${rec.category} (${rec.priority.toUpperCase()})`, 14, yPos);
+      yPos += 6;
+      
+      doc.setFontSize(9);
+      doc.setTextColor(120, 120, 120);
+      const splitMessage = doc.splitTextToSize(rec.message, pageWidth - 28);
+      doc.text(splitMessage, 14, yPos);
+      yPos += splitMessage.length * 5 + 4;
+    });
+
+    // Footer
+    const pageCount = doc.internal.getNumberOfPages();
+    doc.setFontSize(8);
+    doc.setTextColor(150, 150, 150);
+    for (let i = 1; i <= pageCount; i++) {
+      doc.setPage(i);
+      doc.text(
+        `Generated on ${new Date().toLocaleDateString()} | Page ${i} of ${pageCount}`,
+        pageWidth / 2,
+        doc.internal.pageSize.height - 10,
+        { align: 'center' }
+      );
+    }
+
+    // Save PDF
+    doc.save(`waste-report-${selectedYear}-${selectedMonth}.pdf`);
+    setShowExportMenu(false);
+  };
+
+  /**
+   * Exports report as Excel
+   */
+  const handleExportExcel = () => {
+    if (!reportData) return;
+
+    // Create workbook
+    const wb = XLSX.utils.book_new();
+
+    // Summary Sheet
+    const summaryData = [
+      ['Monthly Waste Collection Report'],
+      [`${reportData.period.monthName} ${reportData.period.year}`],
+      [],
+      ['Summary Statistics'],
+      ['Metric', 'Value'],
+      ['Total Collections', reportData.summary.totalCollections],
+      ['Completed Collections', reportData.summary.completedCollections],
+      ['Pending Collections', reportData.summary.pendingCollections],
+      ['In Progress Collections', reportData.summary.inProgressCollections],
+      ['Cancelled Collections', reportData.summary.cancelledCollections],
+      ['Total Waste Collected (kg)', reportData.summary.totalWasteCollected],
+      ['Revenue Generated (Rs.)', reportData.summary.revenueGenerated],
+      ['Active Bins', reportData.summary.activeBins],
+      ['Total Bins', reportData.summary.totalBins],
+      [],
+      ['Trends'],
+      ['Metric', 'Value'],
+      ['Daily Average Collections', reportData.trends.dailyAverage],
+      ['Completion Rate (%)', reportData.trends.completionRate],
+      ['Average Collection Time (hours)', reportData.trends.averageCollectionTime],
+      ['Cancellation Rate (%)', reportData.trends.cancellationRate]
+    ];
+
+    const summarySheet = XLSX.utils.aoa_to_sheet(summaryData);
+    
+    // Set column widths
+    summarySheet['!cols'] = [{ wch: 30 }, { wch: 20 }];
+    
+    XLSX.utils.book_append_sheet(wb, summarySheet, 'Summary');
+
+    // Waste by Type Sheet
+    const wasteTypeData = [
+      ['Waste Type', 'Collections', 'Total Weight (kg)', 'Percentage (%)'],
+      ...Object.entries(reportData.wasteByType).map(([type, data]) => [
+        type.charAt(0).toUpperCase() + type.slice(1),
+        data.count,
+        data.totalWeight,
+        data.percentage
+      ])
+    ];
+
+    const wasteTypeSheet = XLSX.utils.aoa_to_sheet(wasteTypeData);
+    wasteTypeSheet['!cols'] = [{ wch: 15 }, { wch: 15 }, { wch: 20 }, { wch: 15 }];
+    XLSX.utils.book_append_sheet(wb, wasteTypeSheet, 'Waste by Type');
+
+    // High Waste Areas Sheet
+    const areasData = [
+      ['Rank', 'Area', 'Total Collections', 'Waste Volume (kg)', 'Dominant Waste Type'],
+      ...reportData.highWasteAreas.map((area, index) => [
+        index + 1,
+        area.area,
+        area.totalCollections,
+        area.wasteVolume,
+        area.dominantWasteType.charAt(0).toUpperCase() + area.dominantWasteType.slice(1)
+      ])
+    ];
+
+    const areasSheet = XLSX.utils.aoa_to_sheet(areasData);
+    areasSheet['!cols'] = [{ wch: 8 }, { wch: 40 }, { wch: 18 }, { wch: 20 }, { wch: 20 }];
+    XLSX.utils.book_append_sheet(wb, areasSheet, 'High Waste Areas');
+
+    // Recommendations Sheet
+    const recommendationsData = [
+      ['Priority', 'Category', 'Message', 'Impact'],
+      ...reportData.recommendations.map(rec => [
+        rec.priority.toUpperCase(),
+        rec.category,
+        rec.message,
+        rec.impact
+      ])
+    ];
+
+    const recommendationsSheet = XLSX.utils.aoa_to_sheet(recommendationsData);
+    recommendationsSheet['!cols'] = [{ wch: 12 }, { wch: 20 }, { wch: 60 }, { wch: 40 }];
+    XLSX.utils.book_append_sheet(wb, recommendationsSheet, 'Recommendations');
+
+    // Save Excel file
+    XLSX.writeFile(wb, `waste-report-${selectedYear}-${selectedMonth}.xlsx`);
+    setShowExportMenu(false);
+  };
+
+  /**
+   * Exports report as JSON
+   */
+  const handleExportJSON = () => {
+    if (!reportData) return;
+
     const dataStr = JSON.stringify(reportData, null, 2);
     const dataBlob = new Blob([dataStr], { type: 'application/json' });
     const url = URL.createObjectURL(dataBlob);
@@ -91,6 +347,7 @@ const MonthlyReports = () => {
     link.download = `waste-report-${selectedYear}-${selectedMonth}.json`;
     link.click();
     URL.revokeObjectURL(url);
+    setShowExportMenu(false);
   };
 
   /**
@@ -241,26 +498,116 @@ const MonthlyReports = () => {
 
           {/* Export Button */}
           {reportData && (
-            <button
-              onClick={handleExportReport}
-              style={{
-                backgroundColor: Colors.secondaryButton,
-                color: "#fff",
-                padding: "0.8rem 2rem",
-                borderRadius: "8px",
-                fontSize: "1rem",
-                fontWeight: "600",
-                cursor: "pointer",
-                border: "none",
-                transition: "all 0.3s",
-                display: "flex",
-                alignItems: "center",
-                gap: "0.5rem"
-              }}
-            >
-              <Download size={20} />
-              Export Report
-            </button>
+            <div ref={exportMenuRef} style={{ position: "relative" }}>
+              <button
+                onClick={() => setShowExportMenu(!showExportMenu)}
+                style={{
+                  backgroundColor: Colors.secondaryButton,
+                  color: "#fff",
+                  padding: "0.8rem 2rem",
+                  borderRadius: "8px",
+                  fontSize: "1rem",
+                  fontWeight: "600",
+                  cursor: "pointer",
+                  border: "none",
+                  transition: "all 0.3s",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "0.5rem"
+                }}
+              >
+                <Download size={20} />
+                Export Report
+                <ChevronDown size={16} />
+              </button>
+
+              {/* Export Dropdown Menu */}
+              {showExportMenu && (
+                <div
+                  style={{
+                    position: "absolute",
+                    top: "100%",
+                    right: 0,
+                    marginTop: "0.5rem",
+                    backgroundColor: "#fff",
+                    borderRadius: "8px",
+                    boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+                    overflow: "hidden",
+                    zIndex: 1000,
+                    minWidth: "200px"
+                  }}
+                >
+                  <button
+                    onClick={handleExportPDF}
+                    style={{
+                      width: "100%",
+                      padding: "0.75rem 1rem",
+                      backgroundColor: "transparent",
+                      border: "none",
+                      textAlign: "left",
+                      cursor: "pointer",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "0.5rem",
+                      fontSize: "0.95rem",
+                      color: Colors.textPrimary,
+                      transition: "background-color 0.2s"
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = Colors.background}
+                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "transparent"}
+                  >
+                    <FileDown size={18} color="#dc3545" />
+                    Export as PDF
+                  </button>
+
+                  <button
+                    onClick={handleExportExcel}
+                    style={{
+                      width: "100%",
+                      padding: "0.75rem 1rem",
+                      backgroundColor: "transparent",
+                      border: "none",
+                      textAlign: "left",
+                      cursor: "pointer",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "0.5rem",
+                      fontSize: "0.95rem",
+                      color: Colors.textPrimary,
+                      transition: "background-color 0.2s"
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = Colors.background}
+                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "transparent"}
+                  >
+                    <FileSpreadsheet size={18} color="#28a745" />
+                    Export as Excel
+                  </button>
+
+                  <button
+                    onClick={handleExportJSON}
+                    style={{
+                      width: "100%",
+                      padding: "0.75rem 1rem",
+                      backgroundColor: "transparent",
+                      border: "none",
+                      textAlign: "left",
+                      cursor: "pointer",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "0.5rem",
+                      fontSize: "0.95rem",
+                      color: Colors.textPrimary,
+                      transition: "background-color 0.2s"
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = Colors.background}
+                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "transparent"}
+                  >
+                    <FileText size={18} color="#17a2b8" />
+                    Export as JSON
+                  </button>
+                </div>
+              )}
+            </div>
           )}
         </div>
 

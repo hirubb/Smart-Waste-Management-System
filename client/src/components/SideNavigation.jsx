@@ -60,7 +60,7 @@ const SideNavigation = () => {
                     <Link to="/monthly-reports">Monthly Reports</Link>
                   </li>
                   <li>
-                    <Link to="/custom-reports">Custom Reports</Link>
+                    <Link to="/data-analysis">Data Analysis</Link>
                   </li>
                 </ul>
               )}
@@ -100,10 +100,13 @@ const SideNavigation = () => {
                     <Link to="/monthly-reports">Monthly Reports</Link>
                   </li>
                   <li>
-                    <Link to="/custom-reports">Custom Reports</Link>
+                    <Link to="/report-generation">Report Generation</Link>
                   </li>
                   <li>
                     <Link to="/report-history">Report History</Link>
+                  </li>
+                  <li>
+                    <Link to="/data-analysis">Data Analysis</Link>
                   </li>
                 </ul>
               )}
