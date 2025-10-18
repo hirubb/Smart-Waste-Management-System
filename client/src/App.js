@@ -44,6 +44,7 @@ import CustomReports from './pages/CustomReports';
 import ReportHistory from './pages/ReportHistory';
 import WasteManagementSystem from "./pages/WasteManagementSystem";
 import RoutesCollectors from "./pages/Routes&Collectors";
+import LiveMonitoring from "./pages/LiveMonitoring";
 
 
 /**
@@ -168,6 +169,14 @@ function App() {
                     </ProtectedRoute>
                 }
             />
+            <Route
+            path="/live-monitoring"
+            element={
+                <ProtectedRoute>
+                    <LiveMonitoring/>
+                </ProtectedRoute>
+            }
+        />
 
 
             {/* Report History - Protected route */}
