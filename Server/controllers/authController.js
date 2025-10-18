@@ -395,3 +395,35 @@ exports.changePassword = async (req, res) => {
   }
 };
 
+/**
+ * Get all collectors with their user and route details
+ */
+exports.getAllCollectors = async (req, res) => {
+  try {
+    // Find all collector profiles and populate related data
+    const collectors = await User.find()
+      // If collector has a route assigned
+
+    // If no collectors found
+    if (!collectors || collectors.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "No collectors found"
+      });
+    }
+
+    // Respond with data
+    res.status(200).json({
+      success: true,
+      count: collectors.length,
+      collectors
+    });
+  } catch (error) {
+    console.error("Get collectors error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error while fetching collectors",
+      error: error.message
+    });
+  }
+};

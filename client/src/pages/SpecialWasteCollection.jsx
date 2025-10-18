@@ -297,7 +297,7 @@ const SpecialWasteCollection = () => {
     <Container className="py-4" style={{ maxWidth: "1100px" }}>
       {/* Google Maps Script */}
       <script
-        src={`https://maps.googleapis.com/maps/api/js?key=YOUR_GOOGLE_MAPS_API_KEY&libraries=places`}
+        src={`https://maps.googleapis.com/maps/api/js?key=AIzaSyAQb6Asc-RcDV1bKvNno1eW79mRMlf35AU&libraries=places`}
         async
         defer
       ></script>
