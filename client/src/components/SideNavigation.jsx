@@ -33,7 +33,7 @@ const SideNavigation = () => {
               </Link>
             </li>
             <li className="nav-item">
-              <Link to="/manage-users" className="nav-link">
+              <Link to="/live-monitoring" className="nav-link">
                 <span>Live Route Monitoring</span>
               </Link>
             </li>
