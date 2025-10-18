@@ -40,7 +40,7 @@ import SensorUI from './pages/SensorUI';
 import LiveMonitor from './pages/LiveMonitor';
 import WasteManagerDashboard from './pages/WasteManagerDashboard';
 import MonthlyReports from './pages/MonthlyReports';
-import CustomReports from './pages/CustomReports';
+
 import ReportHistory from './pages/ReportHistory';
 import WasteManagementSystem from "./pages/WasteManagementSystem";
 import RoutesCollectors from "./pages/Routes&Collectors";
@@ -143,15 +143,8 @@ function App() {
             } 
           />
 
-          {/* Custom Reports - Protected route */}
-          <Route 
-            path="/custom-reports" 
-            element={
-              <ProtectedRoute>
-                <CustomReports />
-              </ProtectedRoute>
-            } 
-          />
+    
+        
             {/* Optimized route - Protected route */}
             <Route
                 path="/Optimize-Route"
